@@ -15,7 +15,7 @@ jQuery(function($) {
 
 $(document).ready(function(){
   
-    $('#form_Tmp_mst_modul').ajaxForm({
+    $('#form_tmp_mst_group_modul').ajaxForm({
       beforeSend: function() {
         achtungShowLoader();  
       },
@@ -27,13 +27,14 @@ $(document).ready(function(){
 
         if(jsonResponse.status === 200){
           $.achtung({message: jsonResponse.message, timeout:5});
-          $('#page-area-content').load('setting/Tmp_mst_modul?_=' + (new Date()).getTime());
+          $('#page-area-content').load('setting/Tmp_mst_group_modul?_=' + (new Date()).getTime());
         }else{
           $.achtung({message: jsonResponse.message, timeout:5});
         }
         achtungHideLoader();
       }
     }); 
+
 })
 
 </script>
@@ -53,38 +54,26 @@ $(document).ready(function(){
     <!-- PAGE CONTENT BEGINS -->
           <div class="widget-body">
             <div class="widget-main no-padding">
-              <form class="form-horizontal" method="post" id="form_Tmp_mst_modul" action="<?php echo site_url('setting/Tmp_mst_modul/process')?>" enctype="multipart/form-data">
+              <form class="form-horizontal" method="post" id="form_tmp_mst_group_modul" action="<?php echo site_url('setting/Tmp_mst_group_modul/process')?>" enctype="multipart/form-data">
                 <br>
 
                 <div class="form-group">
                   <label class="control-label col-md-2">ID</label>
                   <div class="col-md-1">
-                    <input name="id" id="id" value="<?php echo isset($value)?$value->modul_id:0?>" placeholder="Auto" class="form-control" type="text" readonly>
+                    <input name="id" id="id" value="<?php echo isset($value)?$value->group_modul_id:0?>" placeholder="Auto" class="form-control" type="text" readonly>
                   </div>
                   
                 </div>
                 <div class="form-group">
-                  <label class="control-label col-md-2">Modul Name</label>
+                  <label class="control-label col-md-2">Group Modul Name</label>
                   <div class="col-md-2">
-                    <input name="name" id="name" value="<?php echo isset($value)?$value->name:''?>" placeholder="" class="form-control" type="text" <?php echo ($flag=='read')?'readonly':''?> >
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="control-label col-md-2">Icon</label>
-                  <div class="col-md-2">
-                    <input name="icon" id="icon" value="<?php echo isset($value)?$value->icon:''?>" placeholder="" class="form-control" type="text" <?php echo ($flag=='read')?'readonly':''?> >
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="control-label col-md-2">Kelompok Modul</label>
-                  <div class="col-md-2">
-                    <?php echo $this->master->custom_selection(array('table'=>'tmp_mst_group_modul', 'where'=>array('is_active'=>'Y'), 'id'=>'group_modul_id', 'name' => 'group_modul_name'),isset($value)?$value->group_modul_id:'','group_modul_id','group_modul_id','chosen-slect form-control',($flag=='read')?'readonly':'','');?>
+                    <input name="group_modul_name" id="group_modul_name" value="<?php echo isset($value)?$value->group_modul_name:''?>" placeholder="" class="form-control" type="text" <?php echo ($flag=='read')?'readonly':''?> >
                   </div>
                 </div>
                 <div class="form-group">
                   <label class="control-label col-md-2">Description</label>
                   <div class="col-md-4">
-                  <textarea name="description" class="form-control" <?php echo ($flag=='read')?'readonly':''?> style="height:70px !important"><?php echo isset($value)?$value->description:''?></textarea>
+                  <textarea name="group_modul_description" class="form-control" <?php echo ($flag=='read')?'readonly':''?> style="height:50px !important"><?php echo isset($value)?$value->group_modul_description:''?></textarea>
                   </div>
                 </div>
                 <div class="form-group">
@@ -117,9 +106,9 @@ $(document).ready(function(){
                 <div class="form-actions center">
 
                   <!--hidden field-->
-                  <!-- <input type="text" name="id" value="<?php echo isset($value)?$value->modul_id:0?>"> -->
+                  <!-- <input type="text" name="id" value="<?php echo isset($value)?$value->group_modul_id:0?>"> -->
 
-                  <a onclick="getMenu('setting/Tmp_mst_modul')" href="#" class="btn btn-sm btn-success">
+                  <a onclick="getMenu('setting/Tmp_mst_group_modul')" href="#" class="btn btn-sm btn-success">
                     <i class="ace-icon fa fa-arrow-left icon-on-right bigger-110"></i>
                     Kembali ke daftar
                   </a>

@@ -62,8 +62,8 @@ class Templates extends MX_Controller {
 		$data['menu'] = $this->lib_menus->get_menus($this->session->userdata('user')->user_id, $_GET['mod']);
 		$data['app'] = $this->db->get_where('tmp_profile_app', array('id' => 1))->row();
 		$data['module'] = $this->db->get_where('tmp_mst_modul', array('modul_id' => $_GET['mod']))->row();
-		$data['graph'] = $this->master->get_graph_data();
-		$data['graph_polling'] = $this->master->get_graph_polling();
+		//$data['graph'] = $this->master->get_graph_data();
+		//$data['graph_polling'] = $this->master->get_graph_polling();
 		//print_r($data['graph']);die;
 		$this->load->view('templates/content_view', $data);
 

@@ -1,13 +1,13 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Tmp_mst_modul_model extends CI_Model {
+class Tmp_mst_group_modul_model extends CI_Model {
 
-	var $table = 'tmp_mst_modul';
-	var $column = array('tmp_mst_modul.name','tmp_mst_modul.description','tmp_mst_modul.is_active','tmp_mst_modul.updated_date','tmp_mst_modul.created_date', 'tmp_mst_modul.name','tmp_mst_group_modul.group_modul_name');
-	var $select = 'tmp_mst_modul.*, tmp_mst_group_modul.group_modul_name';
+	var $table = 'tmp_mst_group_modul';
+	var $column = array('tmp_mst_group_modul.group_modul_name','tmp_mst_group_modul.group_modul_description','tmp_mst_group_modul.is_active','tmp_mst_group_modul.updated_date','tmp_mst_group_modul.created_date');
+	var $select = 'tmp_mst_group_modul.*';
 
-	var $order = array('tmp_mst_modul.modul_id' => 'DESC', 'tmp_mst_modul.updated_date' => 'DESC');
+	var $order = array('tmp_mst_group_modul.group_modul_id' => 'DESC', 'tmp_mst_group_modul.updated_date' => 'DESC');
 
 	public function __construct()
 	{
@@ -18,7 +18,6 @@ class Tmp_mst_modul_model extends CI_Model {
 	private function _main_query(){
 		$this->db->select($this->select);
 		$this->db->from($this->table);
-		$this->db->join('tmp_mst_group_modul','tmp_mst_group_modul.group_modul_id='.$this->table.'.group_modul_id','left');
 		$this->db->where($this->table.".is_deleted != 'Y'");
 	}
 
@@ -74,11 +73,11 @@ class Tmp_mst_modul_model extends CI_Model {
 	{
 		$this->_main_query();
 		if(is_array($id)){
-			$this->db->where_in(''.$this->table.'.modul_id',$id);
+			$this->db->where_in(''.$this->table.'.group_modul_id',$id);
 			$query = $this->db->get();
 			return $query->result();
 		}else{
-			$this->db->where(''.$this->table.'.modul_id',$id);
+			$this->db->where(''.$this->table.'.group_modul_id',$id);
 			$query = $this->db->get();
 			return $query->row();
 		}
@@ -100,7 +99,7 @@ class Tmp_mst_modul_model extends CI_Model {
 	public function delete_by_id($id)
 	{
 		$get_data = $this->get_by_id($id);
-		$this->db->where_in(''.$this->table.'.modul_id', $id);
+		$this->db->where_in(''.$this->table.'.group_modul_id', $id);
 		return $this->db->update($this->table, array('is_deleted' => 'Y', 'is_active' => 'N'));
 	}
 

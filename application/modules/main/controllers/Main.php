@@ -36,7 +36,7 @@ class Main extends MX_Controller {
         );
 
         //echo '<pre>';
-        //print_r($this->session->all_userdata());die;
+        //print_r($data);die;
         $this->load->view('Main/main_view', $data);
     }
 

@@ -12,8 +12,8 @@
     </div><!-- /.page-header -->
 
     <div class="clearfix" style="margin-bottom:-5px">
-      <?php echo $this->authuser->show_button('setting/Tmp_mst_modul','C','',1)?>
-        <?php echo $this->authuser->show_button('setting/Tmp_mst_modul','D','',5)?>
+      <?php echo $this->authuser->show_button('setting/Tmp_mst_group_modul','C','',1)?>
+        <?php echo $this->authuser->show_button('setting/Tmp_mst_group_modul','D','',5)?>
 
     </div>
     <hr class="separator">
@@ -27,8 +27,7 @@
           <th width="30px" class="center"></th>
           <th width="120px">&nbsp;</th>
           <th width="50px">ID</th>
-          <th>Modul Name</th>
-          <th>Kelompok Modul</th>
+          <th>Group Modul Name</th>
           <th>Description</th>
           <th>Status</th>
           
@@ -46,7 +45,7 @@
 <script src="<?php echo base_url()?>/assets/js/dataTables/jquery.dataTables.bootstrap.js"></script>
 <script src="<?php echo base_url()?>/assets/js/dataTables/extensions/TableTools/js/dataTables.tableTools.js"></script>
 <script src="<?php echo base_url()?>/assets/js/dataTables/extensions/ColVis/js/dataTables.colVis.js"></script>
-<script src="<?php echo base_url().'assets/js/custom/setting/Tmp_mst_modul.js'?>"></script>
+<script src="<?php echo base_url().'assets/js/custom/setting/Tmp_mst_group_modul.js'?>"></script>
 
 
 

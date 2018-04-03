@@ -87,7 +87,7 @@ $(document).ready(function(){
                       <select id="role_id" class="multiselect" multiple="multiple" name="user_role[]">
                         <?php 
                           foreach($role as $row){
-                            $check_selected = $this->Tmp_user_has_role->check_selected($row->role_id);
+                            $check_selected = $this->Tmp_user_has_role->check_selected($row->role_id, $value->user_id); 
                             $selected = ($check_selected != false)?'selected':'';
                             echo '<option value="'.$row->role_id.'" '.$selected.'>'.$row->name.'</option>';
                           }

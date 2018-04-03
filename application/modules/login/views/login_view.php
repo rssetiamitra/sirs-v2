@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta charset="utf-8" />
-    <title>Panel Admin | Form Login</title>
+    <title>SIRS | Form Login</title>
 
     <meta name="description" content="User login page" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -18,11 +18,21 @@
     <!-- ace styles -->
     <link rel="stylesheet" href="<?php echo base_url()?>assets/css/ace.css" />
     <!-- Favicon -->
-    <link rel="shortcut icon" href="<?php echo base_url()?>assets/img/logo_garuda.png">
+    <link rel="shortcut icon" href="<?php echo base_url()?>assets/images/favicon.ico">
     
   </head>
+  <!-- <style type="text/css">
+    #body-style {
+      background-image:url('assets/images/bg.jpg');
+      background-size: 100%; 
+      background-attachment: fixed;
+      background-position: top;
+      filter: opacity(opacity: 100%);
+      background-repeat: no-repeat;
+    }
+  </style> -->
 
-  <body class="login-layout light-login">
+  <body class="login-layout light-login" id="body-style">
     <div class="main-container">
       <div class="main-content">
         <div class="row">
@@ -32,18 +42,18 @@
               <div class="center">
                 <h1>
                   <!-- <i class="ace-icon fa fa-leaf green"></i> -->
-                  <img src="<?php echo base_url().'assets/images/dkpp.png'?>" width="200px"><br>
+                  <img src="<?php //echo base_url().'assets/images/dkpp.png'?>" width="200px"><br>
                   <!-- <span class="white" id="id-text2">Aplikasi Metode Perencanaan Kebutuhan SDM Kesehatan</span> -->
                 </h1>
-                <h3 class="dark" id="id-text">DKPP<br><small>Dewan Kehormatan Penyelenggara Pemilu</small></h3>
-                <h4 class="dark" id="company-text">&copy; Panel Admin - Website</h4>
+                <!-- <h3 class="dark" id="id-text">DKPP<br><small>Dewan Kehormatan Penyelenggara Pemilu</small></h3>
+                <h4 class="dark" id="company-text">&copy; Panel Admin - Website</h4> -->
               </div>
               <div class="space-6"></div>
-              
+              <br><br><br><br><br><br><br>
               <div class="position-relative">
                 <div id="login-box" class="login-box visible widget-box no-border">
                   <div class="widget-body">
-                    <div class="widget-main" style="background: url('assets/img/images-3.jpg') no-repeat center">
+                    <div class="widget-main">
 
                       <h4 class="header blue lighter bigger">
                         <i class="ace-icon fa fa-coffee green"></i>

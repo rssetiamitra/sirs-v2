@@ -65,7 +65,8 @@
           <!-- #section:basics/navbar.layout.brand -->
           <a href="#" class="navbar-brand">
             <small>
-              <i class="<?php echo $app->icon?>"></i>
+              <!-- <i class="<?php echo $app->icon?>"></i> -->
+              <img src="<?php echo base_url().'assets/images/'.$app->app_logo.''?>" width="50px" style="margin: -16px -7px -9px">
               <?php echo $app->app_name?>
             </small>
           </a>
@@ -81,7 +82,7 @@
         <div class="navbar-buttons navbar-header pull-right" role="navigation">
           <ul class="nav ace-nav">
 
-            <!-- <li class="grey">
+            <li class="grey">
               <a data-toggle="dropdown" class="dropdown-toggle" href="#">
                 <i class="ace-icon fa fa-tasks"></i>
                 <span class="badge badge-grey">4</span>
@@ -334,7 +335,7 @@
                   </a>
                 </li>
               </ul>
-            </li> -->
+            </li>
 
             <!-- #section:basics/navbar.user_menu -->
             <li class="light-blue">
@@ -380,6 +381,23 @@
 
         <!-- /section:basics/navbar.dropdown -->
       </div><!-- /.navbar-container -->
+        <nav role="navigation" class="navbar-menu pull-left collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="#">
+                <i class="ace-icon fa fa-user"></i>
+                <?php echo $this->session->userdata('user')->username; ?>
+              </a>
+            </li>
+
+            <li>
+              <a href="#">
+                <i class="ace-icon fa fa-calendar"></i>
+                <?php echo date('l, d F Y'); ?> 
+              </a>
+            </li>
+          </ul>
+        </nav>
     </div>
 
     <!-- /section:basics/navbar.layout -->
@@ -387,6 +405,15 @@
       <script type="text/javascript">
         try{ace.settings.check('main-container' , 'fixed')}catch(e){}
       </script>
+      <?php
+            $arr_color_breadcrumbs = array('#f4ae11');
+            shuffle($arr_color_breadcrumbs);
+          ?>
+          <div class="breadcrumbs" id="breadcrumbs" style="background-color:<?php echo array_shift($arr_color_breadcrumbs)?>; margin-top:-16px">
+            <script type="text/javascript">
+              try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+            </script>
+          </div>
 
       <!-- #section:basics/sidebar -->
       <div id="sidebar" class="sidebar                  responsive">
@@ -436,7 +463,6 @@
                   <i class="menu-icon fa fa-dashboard"></i>
                   <span class="menu-text"> Home </span>
               </a>
-
               <b class="arrow"></b>
           </li>
 
@@ -497,9 +523,6 @@
       <!-- /section:basics/sidebar -->
       <div class="main-content">
         <div class="main-content-inner">
-          <!-- #section:basics/content.breadcrumbs -->
-          
-
           <!-- /section:basics/content.breadcrumbs -->
           <div class="page-content">
             <!-- #section:settings.box -->
@@ -598,12 +621,12 @@
                     <div class="row">
                       <!-- content here -->
 
-                      <center>
+                      <!-- <center>
                           <img class="img-responsive" style="padding-top:15px;width:150px" src="<?php echo base_url().'assets/images/dkpp.jpg'?>">
                           <p>
                             <h3>Dewan Kehormatan Penyelenggara Pemilu<br>Republik Indonesia</h3>
                           </p>
-                      </center>
+                      </center> -->
 
                       <div class="col-sm-6">
                         <div id="graf"></div>

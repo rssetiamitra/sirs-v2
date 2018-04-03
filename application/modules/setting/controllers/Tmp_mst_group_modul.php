@@ -3,20 +3,20 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-class Tmp_mst_modul extends MX_Controller {
+class Tmp_mst_group_modul extends MX_Controller {
 
     /*function constructor*/
     function __construct() {
 
         parent::__construct();
         /*breadcrumb default*/
-        $this->breadcrumbs->push('Index', 'setting/Tmp_mst_modul');
+        $this->breadcrumbs->push('Index', 'setting/Tmp_mst_group_modul');
         /*session redirect login if not login*/
         if($this->session->userdata('logged')!=TRUE){
             redirect(base_url().'login');exit;
         }
         /*load model*/
-        $this->load->model('Tmp_mst_modul_model', 'Tmp_mst_modul');
+        $this->load->model('Tmp_mst_group_modul_model', 'Tmp_mst_group_modul');
         /*enable profiler*/
         $this->output->enable_profiler(false);
 
@@ -26,11 +26,11 @@ class Tmp_mst_modul extends MX_Controller {
         //echo '<pre>';print_r($this->session->all_userdata());
         /*define variable data*/
         $data = array(
-            'title' => 'Master Modul',
+            'title' => 'Master Group Modul',
             'breadcrumbs' => $this->breadcrumbs->show()
         );
         /*load view index*/
-        $this->load->view('Tmp_mst_modul/index', $data);
+        $this->load->view('Tmp_mst_group_modul/index', $data);
     }
 
     public function form($id='')
@@ -38,43 +38,43 @@ class Tmp_mst_modul extends MX_Controller {
         /*if id is not null then will show form edit*/
         if( $id != '' ){
             /*breadcrumbs for edit*/
-            $this->breadcrumbs->push('Edit modul', 'Tmp_mst_modul/'.strtolower(get_class($this)).'/'.__FUNCTION__.'/'.$id);
+            $this->breadcrumbs->push('Edit group modul', 'Tmp_mst_group_modul/'.strtolower(get_class($this)).'/'.__FUNCTION__.'/'.$id);
             /*get value by id*/
-            $data['value'] = $this->Tmp_mst_modul->get_by_id($id);
+            $data['value'] = $this->Tmp_mst_group_modul->get_by_id($id);
             /*initialize flag for form*/
             $data['flag'] = "update";
         }else{
             /*breadcrumbs for create or add row*/
-            $this->breadcrumbs->push('Add modul', 'Tmp_mst_modul/'.strtolower(get_class($this)).'/form');
+            $this->breadcrumbs->push('Add group modul', 'Tmp_mst_group_modul/'.strtolower(get_class($this)).'/form');
             /*initialize flag for form add*/
             $data['flag'] = "create";
         }
         /*title header*/
-        $data['title'] = 'Master Modul';
+        $data['title'] = 'Master Group Modul';
         /*show breadcrumbs*/
         $data['breadcrumbs'] = $this->breadcrumbs->show();
         /*load form view*/
-        $this->load->view('Tmp_mst_modul/form', $data);
+        $this->load->view('Tmp_mst_group_modul/form', $data);
     }
     /*function for view data only*/
     public function show($id)
     {
         /*breadcrumbs for view*/
-        $this->breadcrumbs->push('View modul', 'Tmp_mst_modul/'.strtolower(get_class($this)).'/'.__FUNCTION__.'/'.$id);
+        $this->breadcrumbs->push('View group modul', 'Tmp_mst_group_modul/'.strtolower(get_class($this)).'/'.__FUNCTION__.'/'.$id);
         /*define data variabel*/
-        $data['value'] = $this->Tmp_mst_modul->get_by_id($id);
-        $data['title'] = 'Master Modul';
+        $data['value'] = $this->Tmp_mst_group_modul->get_by_id($id);
+        $data['title'] = 'Master Group Modul';
         $data['flag'] = "read";
         $data['breadcrumbs'] = $this->breadcrumbs->show();
         /*load form view*/
-        $this->load->view('Tmp_mst_modul/form', $data);
+        $this->load->view('Tmp_mst_group_modul/form', $data);
     }
 
 
     public function get_data()
     {
         /*get data from model*/
-        $list = $this->Tmp_mst_modul->get_datatables();
+        $list = $this->Tmp_mst_group_modul->get_datatables();
         $data = array();
         $no = $_POST['start'];
         foreach ($list as $row_list) {
@@ -82,19 +82,18 @@ class Tmp_mst_modul extends MX_Controller {
             $row = array();
             $row[] = '<div class="center">
                         <label class="pos-rel">
-                            <input type="checkbox" class="ace" name="selected_id[]" value="'.$row_list->modul_id.'"/>
+                            <input type="checkbox" class="ace" name="selected_id[]" value="'.$row_list->group_modul_id.'"/>
                             <span class="lbl"></span>
                         </label>
                       </div>';
             $row[] = '<div class="center">
-                        '.$this->authuser->show_button('setting/Tmp_mst_modul','R',$row_list->modul_id,2).'
-                        '.$this->authuser->show_button('setting/Tmp_mst_modul','U',$row_list->modul_id,2).'
-                        '.$this->authuser->show_button('setting/Tmp_mst_modul','D',$row_list->modul_id,2).'
+                        '.$this->authuser->show_button('setting/Tmp_mst_group_modul','R',$row_list->group_modul_id,2).'
+                        '.$this->authuser->show_button('setting/Tmp_mst_group_modul','U',$row_list->group_modul_id,2).'
+                        '.$this->authuser->show_button('setting/Tmp_mst_group_modul','D',$row_list->group_modul_id,2).'
                       </div>'; 
-            $row[] = '<div class="center">'.$row_list->modul_id.'</div>';
-            $row[] = strtoupper($row_list->name);
-            $row[] = $row_list->group_modul_name;
-            $row[] = $row_list->description;
+            $row[] = '<div class="center">'.$row_list->group_modul_id.'</div>';
+            $row[] = strtoupper($row_list->group_modul_name);
+            $row[] = $row_list->group_modul_description;
             $row[] = ($row_list->is_active == 'Y') ? '<div class="center"><span class="label label-sm label-success">Active</span></div>' : '<div class="center"><span class="label label-sm label-danger">Not active</span></div>';
                    
             $data[] = $row;
@@ -102,8 +101,8 @@ class Tmp_mst_modul extends MX_Controller {
 
         $output = array(
                         "draw" => $_POST['draw'],
-                        "recordsTotal" => $this->Tmp_mst_modul->count_all(),
-                        "recordsFiltered" => $this->Tmp_mst_modul->count_filtered(),
+                        "recordsTotal" => $this->Tmp_mst_group_modul->count_all(),
+                        "recordsFiltered" => $this->Tmp_mst_group_modul->count_filtered(),
                         "data" => $data,
                 );
         //output to json format
@@ -115,11 +114,9 @@ class Tmp_mst_modul extends MX_Controller {
        
         $this->load->library('form_validation');
         $val = $this->form_validation;
-        $val->set_rules('name', 'Modul Name', 'trim|required');
-        $val->set_rules('group_modul_id', 'Kelompok Modul', 'trim|required');
-        $val->set_rules('description', 'Description', 'trim|required');
-        $val->set_rules('icon', 'Icon', 'trim|xss_clean');
-        $val->set_rules('is_active', 'Is Active?', 'trim|required');
+        $val->set_rules('group_modul_name', 'Group Modul Name', 'trim|required');
+        $val->set_rules('group_modul_description', 'Description', 'trim|xss_clean');
+        $val->set_rules('is_active', 'Is Active?', 'trim|xss_clean');
 
         $val->set_message('required', "Silahkan isi field \"%s\"");
 
@@ -134,25 +131,23 @@ class Tmp_mst_modul extends MX_Controller {
             $id = ($this->input->post('id'))?$this->regex->_genRegex($this->input->post('id'),'RGXINT'):0;
 
             $dataexc = array(
-                'name' => $this->regex->_genRegex($val->set_value('name'),'RGXQSL'),
-                'description' => $this->regex->_genRegex($val->set_value('description'),'RGXQSL'),
-                'icon' => $this->regex->_genRegex($val->set_value('icon'),'RGXQSL'),
-                'group_modul_id' => $this->regex->_genRegex($val->set_value('group_modul_id'),'RGXINT'),
-                'is_active' => $this->regex->_genRegex($val->set_value('is_active'),'RGXAZ'),
+                'group_modul_name' => $this->regex->_genRegex($val->set_value('group_modul_name'),'RGXQSL'),
+                'group_modul_description' => $this->regex->_genRegex($val->set_value('group_modul_description'),'RGXQSL'),
+                'is_active' => $this->regex->_genRegex($val->set_value('is_active'),'RGXQSL'),
             );
-            
+            //print_r($dataexc);die;
             if($id==0){
                 $dataexc['created_date'] = date('Y-m-d H:i:s');
                 $dataexc['created_by'] = $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL');
-                $this->db->insert('tmp_mst_modul', $dataexc);
+                $this->db->insert('tmp_mst_group_modul', $dataexc);
                 $newId = $this->db->insert_id();
-                $this->logs->save('tmp_mst_modul', $newId, 'insert new record', json_encode($dataexc));
+                $this->logs->save('tmp_mst_group_modul', $newId, 'insert new record', json_encode($dataexc));
             }else{
                 $dataexc['updated_date'] = date('Y-m-d H:i:s');
                 $dataexc['updated_by'] = $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL');
-                $this->db->update('tmp_mst_modul', $dataexc, array('modul_id' => $id));
+                $this->db->update('tmp_mst_group_modul', $dataexc, array('group_modul_id' => $id));
                 $newId = $id;
-                $this->logs->save('tmp_mst_modul', $newId, 'update record', json_encode($dataexc));
+                $this->logs->save('tmp_mst_group_modul', $newId, 'update record', json_encode($dataexc));
             }
             if ($this->db->trans_status() === FALSE)
             {
@@ -172,8 +167,8 @@ class Tmp_mst_modul extends MX_Controller {
         $id=$this->input->post('ID')?$this->regex->_genRegex($this->input->post('ID',TRUE),'RGXINT'):null;
         $toArray = explode(',',$id);
         if($id!=null){
-            if($this->Tmp_mst_modul->delete_by_id($toArray)){
-                $this->logs->save('tmp_mst_modul', $id, 'delete record', '');
+            if($this->Tmp_mst_group_modul->delete_by_id($toArray)){
+                $this->logs->save('tmp_mst_group_modul', $id, 'delete record', '');
                 echo json_encode(array('status' => 200, 'message' => 'Proses Hapus Data Berhasil Dilakukan'));
 
             }else{

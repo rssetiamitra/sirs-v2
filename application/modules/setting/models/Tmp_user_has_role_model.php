@@ -19,7 +19,7 @@ class Tmp_user_has_role_model extends CI_Model {
 		$this->db->select('(SELECT GROUP_CONCAT(role_name) AS role_name
 							FROM (SELECT tmp_user_has_role.user_id, tmp_user_has_role.role_id, tmp_mst_role.name AS role_name
 								FROM tmp_user_has_role 
-								LEFT JOIN tmp_mst_role ON tmp_mst_role.`role_id`=tmp_user_has_role.`role_id`)AS aTable
+								LEFT JOIN tmp_mst_role ON tmp_mst_role.`role_id`=tmp_user_has_role.`role_id`)AS aTable WHERE aTable.`user_id`=tmp_user.`user_id`
 							GROUP BY user_id) AS role_name');
 		$this->db->select($this->select);
 		$this->db->from($this->table);
@@ -109,9 +109,9 @@ class Tmp_user_has_role_model extends CI_Model {
 		return $this->db->update($this->table, array('is_deleted' => 'Y', 'is_active' => 'N'));
 	}
 
-	public function check_selected($role_id){
+	public function check_selected($role_id, $user_id){
 	 	$this->db->from('tmp_user_has_role');
-	 	$this->db->where(array('role_id'=> $role_id));
+	 	$this->db->where(array('role_id'=> $role_id, 'user_id' => $user_id));
 	 	$exist = $this->db->get()->row();
 	 	if($exist){
 	 		return 'selected';
