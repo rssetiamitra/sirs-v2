@@ -52,13 +52,20 @@ final Class Authuser {
         /*check existing*/
         $query = "SELECT action_code
                     FROM tmp_role_has_menu
-                    WHERE menu_id = (SELECT menu_id FROM tmp_mst_menu WHERE link='$link') AND role_id IN (SELECT role_id FROM tmp_user_has_role WHERE user_id=".$CI->session->userdata('user')->user_id.")";
+                    WHERE menu_id = (SELECT menu_id FROM tmp_mst_menu WHERE link='$link') AND role_id IN (SELECT role_id FROM tmp_user_has_role WHERE user_id=".$CI->session->userdata('user')->user_id.")"; 
         $result = $db->query($query);
         if($result->num_rows() > 0){
             $action_code = $result->row()->action_code;
             $str_to_array = explode(',', $action_code); 
+            /*ubah link menjad*/
+            $exp_code = explode('/', $style);
+            $ori_code = (string)$exp_code[0];
+            $flag = isset($exp_code[1])?$exp_code[1]:'';
+            //print_r($flag);die;
+            $repl_link = str_replace("?flag=$flag",'',$link);
+
             /*switch code to get button*/
-            return $this->switch_to_get_btn($str_to_array, $link, $code, $id, $style);
+            return $this->switch_to_get_btn($str_to_array, $repl_link, $code, $id, $style);
         }else{
             return false;
         }
@@ -72,7 +79,12 @@ final Class Authuser {
         }
     }
 
-    function get_button_action($link, $id, $code){
+    function get_button_action($link, $id, $code_style){
+        $exp_code = explode('/', $code_style);
+        $code = (string)$exp_code[0];
+        $flag = isset($exp_code[1])?$exp_code[1]:'';
+        //print_r($code);die;
+
         switch ($code) {
 
             /*style for create*/
@@ -113,6 +125,12 @@ final Class Authuser {
                 $btn = '<a href="#" onclick="getMenu('."'".$link.'/form'."'".')"title="Add">Add</a>';
                 break;
 
+            case 'CC1':
+                # code...
+                $btn = '<button class="btn btn-xs btn-primary" onclick="getMenu('."'".$link.''."'".')"><i class="ace-icon glyphicon glyphicon-plus bigger-50"></i></button>';
+                break;
+
+
             /*style button for read action*/
             case 'R':
                 # code...
@@ -150,6 +168,12 @@ final Class Authuser {
                 $btn = '<a href="#" onclick="getMenu('."'".$link.'/show/'.$id.''."'".')">Read</a>';
                 break;
 
+            case 'RC1':
+                # code...
+                $btn = '<button class="btn btn-xs btn-info" onclick="getMenu('."'".$link.'/show?id='.$id.'&flag='.$flag.''."'".')"><i class="ace-icon fa fa-eye bigger-50"></i></button>';
+                break;
+
+
             /*style button for read action*/
             case 'U':
                 # code...
@@ -186,6 +210,12 @@ final Class Authuser {
                 # code...
                 $btn = '<a href="#" onclick="getMenu('."'".$link.'/form/'.$id.''."'".')" title="Update">Update</a>';
                 break;
+
+            case 'UC1':
+                # code...
+                $btn = '<button class="btn btn-xs btn-success" onclick="getMenu('."'".$link.'/form?id='.$id.'&flag='.$flag."'".')"><i class="ace-icon fa fa-edit bigger-50"></i></button>';
+                break;
+
 
 
 
@@ -228,6 +258,12 @@ final Class Authuser {
                 # code...
                 $btn = '<a href="#" onclick="delete_data('.$id.')">Delete</a>';
                 break;
+
+            case 'DC1':
+                # code...
+                $btn = '<button class="btn btn-xs btn-danger" onclick="delete_data('.$id.')"><i class="ace-icon fa fa-times bigger-50"></i></button>';
+                break;
+
 
 
             default:

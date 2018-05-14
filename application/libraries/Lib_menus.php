@@ -256,11 +256,11 @@
         $CI =&get_instance();
         $db = $CI->load->database('default', TRUE);
         $qry = "SELECT tmp_mst_modul.*, group_modul_name FROM tmp_role_has_menu
-                    LEFT JOIN tmp_mst_menu ON tmp_mst_menu.menu_id=tmp_role_has_menu.menu_id
-                    LEFT JOIN tmp_mst_modul ON tmp_mst_modul.modul_id=tmp_mst_menu.modul_id
-                    LEFT JOIN tmp_mst_group_modul ON tmp_mst_group_modul.group_modul_id=tmp_mst_modul.group_modul_id
-                    WHERE tmp_mst_modul.is_active !='N' AND tmp_mst_menu.is_active !='N' AND tmp_role_has_menu.role_id IN (SELECT role_id FROM tmp_user_has_role WHERE user_id=".$user_id.")
-                    GROUP BY tmp_mst_menu.modul_id";
+                LEFT JOIN tmp_mst_menu ON tmp_mst_menu.menu_id=tmp_role_has_menu.menu_id
+                LEFT JOIN tmp_mst_modul ON tmp_mst_modul.modul_id=tmp_mst_menu.modul_id
+                LEFT JOIN tmp_mst_group_modul ON tmp_mst_group_modul.group_modul_id=tmp_mst_modul.group_modul_id
+                WHERE tmp_mst_modul.is_active !='N' AND tmp_mst_menu.is_active !='N' AND tmp_role_has_menu.role_id IN (SELECT role_id FROM tmp_user_has_role WHERE user_id=".$user_id.")
+                GROUP BY tmp_mst_menu.modul_id";
         $array = $db->query($qry)->result_array();
         //print_r($db->last_query());die;
         foreach ($array as $key => $value) {
