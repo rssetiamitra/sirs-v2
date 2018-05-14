@@ -409,7 +409,7 @@
             $arr_color_breadcrumbs = array('#f4ae11');
             shuffle($arr_color_breadcrumbs);
           ?>
-          <div class="breadcrumbs" id="breadcrumbs" style="background-color:<?php echo array_shift($arr_color_breadcrumbs)?>; margin-top:-16px">
+          <div class="breadcrumbs" id="breadcrumbs" style="background-color:<?php echo array_shift($arr_color_breadcrumbs)?>; margin-top:0px">
             <script type="text/javascript">
               try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
             </script>
@@ -620,21 +620,23 @@
                   <div id="page-area-content">
                     <div class="row">
                       <!-- content here -->
+                        <div class="page-header">
+                            <h1>
+                              <?php echo $title?>
+                              <small>
+                                <i class="ace-icon fa fa-angle-double-right"></i>
+                                <?php echo isset($breadcrumbs)?$breadcrumbs:''?>
+                              </small>
+                            </h1>
+                          </div>
+                        <div class="col-sm-12">
+                          <h2>Modul <?php echo $module->name?></h2>
+                          <?php echo $module->description?>
+                        </div>
 
-                      <!-- <center>
-                          <img class="img-responsive" style="padding-top:15px;width:150px" src="<?php echo base_url().'assets/images/dkpp.jpg'?>">
-                          <p>
-                            <h3>Dewan Kehormatan Penyelenggara Pemilu<br>Republik Indonesia</h3>
-                          </p>
-                      </center> -->
-
-                      <div class="col-sm-6">
-                        <div id="graf"></div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div id="polling"></div>
-                      </div>
+                        <!-- <div class="col-sm-6">
+                          <div id="polling"></div>
+                        </div> -->
                       <!-- end content here -->
                     </div>
                   </div>
