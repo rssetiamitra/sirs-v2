@@ -66,7 +66,7 @@ class Tmp_mst_menu_model extends CI_Model {
 
 	public function count_all()
 	{
-		$this->db->from($this->table);
+		$this->_main_query();
 		return $this->db->count_all_results();
 	}
 
