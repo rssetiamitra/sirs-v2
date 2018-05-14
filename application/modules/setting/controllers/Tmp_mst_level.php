@@ -163,7 +163,7 @@ class Tmp_mst_level extends MX_Controller {
 
     public function delete()
     {
-        $id=$this->input->post('ID')?$this->regex->_genRegex($this->input->post('ID',TRUE),'RGXINT'):null;
+        $id=$this->input->post('ID')?$this->regex->_genRegex($this->input->post('ID',TRUE),'RGXQSL'):null;
         $toArray = explode(',',$id);
         if($id!=null){
             if($this->Tmp_mst_level->delete_by_id($toArray)){
