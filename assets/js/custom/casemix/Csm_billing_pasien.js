@@ -1,13 +1,15 @@
 var oTable;
 $(document).ready(function() {
-  var flag = $('#dynamic-table').attr('data');
   //initiate dataTables plugin
     oTable = $('#dynamic-table').DataTable({ 
           
       "processing": true, //Feature control the processing indicator.
       "serverSide": true, //Feature control DataTables' server-side processing mode.
-      "scrollX": true,
+      "scrollX": false,
+      "scrollY": false,
       "ordering": false,
+      "bPaginate": false,
+      "info": false,
       // Load data for the table's content from an Ajax source
       "ajax": {
           "url": "casemix/Csm_billing_pasien/get_data",
@@ -18,8 +20,8 @@ $(document).ready(function() {
           "targets": [ -1 ], //last column
           "orderable": false, //set not orderable
         },
-        {"aTargets" : [1], "mData" : 2, "sClass":  "details-control"}, 
-        { "visible": false, "targets": 2 }
+        {"aTargets" : [1], "mData" : 3, "sClass":  "details-control"}, 
+        { "visible": false, "targets": [2,3] },
       ],
 
       //Set column definition initialisation properties.
@@ -36,7 +38,8 @@ $(document).ready(function() {
             var tr = $(this).closest('tr');
             var row = oTable.row( tr );
             var data = oTable.row( $(this).parents('tr') ).data();
-            var inv = data[ 1 ];
+            var no_registrasi = data[ 1 ];
+            var tipe = data[ 2 ];
             
 
             if ( row.child.isShown() ) {
@@ -47,10 +50,10 @@ $(document).ready(function() {
             else {
                 /*data*/
                
-                $.getJSON("casemix/Csm_billing_pasien/get_pengaduan_dijadwalkan/" + inv, '', function (data) {
-                    response_data_from_invoice = data;
+                $.getJSON("casemix/Csm_billing_pasien/getDetail/" + no_registrasi + "/" + tipe, '', function (data) {
+                    response_data = data;
                      // Open this row
-                    row.child( format( response_data_from_invoice ) ).show();
+                    row.child( format( response_data ) ).show();
                     tr.addClass('shown');
                 });
                
@@ -59,11 +62,15 @@ $(document).ready(function() {
 
     $('#dynamic-table tbody').on( 'click', 'tr', function () {
         if ( $(this).hasClass('selected') ) {
+            //achtungShowLoader();
             $(this).removeClass('selected');
+            //achtungHideLoader();
         }
         else {
+            //achtungShowLoader();
             oTable.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
+            //achtungHideLoader();
         }
     } );
 
@@ -253,14 +260,37 @@ $(document).ready(function() {
         return 'left';
       }
 
-       $("#button_delete").click(function(event){
+      $('#btn_search_data').click(function (e) {
+          e.preventDefault();
+          $.ajax({
+          url: 'casemix/Csm_billing_pasien/find_data',
+          type: "post",
+          data: $('#form_search').serialize(),
+          dataType: "json",
+          beforeSend: function() {
+            achtungShowLoader();  
+          },
+          success: function(data) {
+            achtungHideLoader();
+            $('#range_date').html('(Source data : Tanggal '+ $('#from_tgl_reg').val()+ ' s/d '+$('#to_tgl_reg').val()+')');
+            find_data_reload(data);
+          }
+        });
+      });
+
+      $('#btn_reset_data').click(function (e) {
+            e.preventDefault();
+            reset_table();
+      });
+
+      $("#button_delete").click(function(event){
           event.preventDefault();
           var searchIDs = $("#dynamic-table input:checkbox:checked").map(function(){
             return $(this).val();
           }).toArray();
           delete_data(''+searchIDs+'')
           console.log(searchIDs);
-        });
+      });
 
       /*$('#button').on( 'click', function () {
           alert($('input[type="checkbox"][name=selected_id]').val());
@@ -268,6 +298,28 @@ $(document).ready(function() {
 
       
 });
+
+function preventDefault(e) {
+  e = e || window.event;
+  if (e.preventDefault)
+      e.preventDefault();
+  e.returnValue = false;  
+}
+
+function reset_table(){
+    oTable.ajax.url('casemix/Csm_billing_pasien/get_data').load();
+    $("html, body").animate({ scrollTop: "400px" });
+
+}
+
+function find_data_reload(result){
+
+    var data = result.data;    
+    oTable.ajax.url('casemix/Csm_billing_pasien/get_data?num='+data.no_sep_mr+'&frmdt='+data.from_tgl_reg+'&todt='+data.to_tgl_reg).load();
+    $("html, body").animate({ scrollTop: "400px" });
+    //$('#search_result_show').show();
+
+}
 
 function format ( data ) {
     return data.html;
@@ -277,46 +329,16 @@ function reload_table(){
    oTable.ajax.reload(); //reload datatable ajax 
 }
   
-
-function delete_data(myid){
-  if(confirm('Are you sure?')){
-    $.ajax({
-        url: 'casemix/Csm_billing_pasien/delete',
-        type: "post",
-        data: {ID:myid},
-        dataType: "json",
-        beforeSend: function() {
-          achtungShowLoader();  
-        },
-        uploadProgress: function(event, position, total, percentComplete) {
-        },
-        complete: function(xhr) {     
-          var data=xhr.responseText;
-          var jsonResponse = JSON.parse(data);
-          if(jsonResponse.status === 200){
-            $.achtung({message: jsonResponse.message, timeout:5});
-            reload_table();
-          }else{
-            $.achtung({message: jsonResponse.message, timeout:5});
-          }
-          achtungHideLoader();
-        }
-
-      });
-
-  }else{
-    return false;
-  }
-  
+function getBillingDetail(noreg, type, field){
+  preventDefault();
+  $.getJSON("casemix/Csm_billing_pasien/getRincianBilling/" + noreg + "/" + type + "/" +field, '', function (data) {
+      response_data = data;
+      html = '';
+      html += '<div class="center"><p><b>RINCIAN BIAYA '+field+'</b></p></div>';
+      $('#'+noreg).html(response_data.html);
+  });
+ 
 }
-
-/*jQuery(function($) {
-
-      
-
-})*/
-
-
 
 
 

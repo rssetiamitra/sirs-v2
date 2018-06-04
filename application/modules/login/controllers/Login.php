@@ -45,7 +45,7 @@ class Login extends MX_Controller {
         else
         {                       
             //set session expire time, after that user should login again
-            $this->session->sess_expiration = 600;
+            $this->session->sess_expiration = 1800;
             $this->session->sess_expire_on_close = FALSE;
 
             /*check username and password exist*/

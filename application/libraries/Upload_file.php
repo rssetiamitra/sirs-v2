@@ -194,6 +194,70 @@ final Class upload_file {
 
     }
 
+    function CsmdoUploadMultiple($params)
+    {
+        $CI =&get_instance();
+        $db = $CI->load->database('default', TRUE);
+        $CI->load->library('upload');
+        //$CI->load->library('image_lib'); 
+        $getData = array();
+        foreach ($_FILES[''.$params['name'].'']['name'] as $i=>$values) {
+
+              $_FILES['userfile']['name']     = $_FILES[''.$params['name'].'']['name'][$i];
+              $_FILES['userfile']['type']     = $_FILES[''.$params['name'].'']['type'][$i];
+              $_FILES['userfile']['tmp_name'] = $_FILES[''.$params['name'].'']['tmp_name'][$i];
+              $_FILES['userfile']['error']    = $_FILES[''.$params['name'].'']['error'][$i];
+              $_FILES['userfile']['size']     = $_FILES[''.$params['name'].'']['size'][$i];
+
+              $random = rand(1,99);
+              $custom_dok_name = isset($_POST['pf_file_name']) ? preg_replace('/\s+/','-', $_POST['pf_file_name'][$i]).'-'.$_POST['csm_rp_no_sep'] : 'Lampiran-'.$random ;
+              $nama_file_unik = $custom_dok_name.'-'.preg_replace('/\s+/','', $_FILES[''.$params['name'].'']['name'][$i]);
+              //$nama_file_unik = preg_replace('/\s+/', '-', $custom_dok_name).'-'.$_POST['csm_rp_no_sep'];
+
+              $type_file = $_FILES[''.$params['name'].'']['type'][$i];
+
+              $config = array(
+                'allowed_types' => '*',
+                'file_name'     => $nama_file_unik,
+                'max_size'      => '999999',
+                'overwrite'     => TRUE,
+                'remove_spaces' => TRUE,
+                'upload_path'   => $params['path']
+              );
+
+              $CI->upload->initialize($config);
+
+              if ($_FILES['userfile']['tmp_name'][$i]) {
+
+                  if ( ! $CI->upload->do_upload()) :
+                    $error = array('error' => $CI->upload->display_errors());
+                  else :
+
+                    $data = array( 'upload_data' => $CI->upload->data() );
+                    /*cek attchment exist*/
+                    
+                    $doc_save = array(
+                        'no_registrasi' => $params['ref_id'],
+                        'csm_dex_nama_dok' => $nama_file_unik,
+                        'csm_dex_jenis_dok' => $type_file,
+                        'csm_dex_fullpath' => $params['path'].$nama_file_unik,
+                    );
+                    $doc_save['created_date'] = date('Y-m-d H:i:s');
+                    $doc_save['created_by'] = $CI->session->userdata('user')->fullname;
+                    $db->insert('csm_dokumen_export', $doc_save);
+
+
+                    $getData[] = $doc_save;
+
+                  endif;
+
+              }
+                
+            }
+
+            return $getData;
+    }
+
     function doUploadMultiple($params)
     {
         $CI =&get_instance();

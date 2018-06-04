@@ -54,7 +54,7 @@ class Hdesk_contact extends MX_Controller {
             $this->load->view('Hdesk_contact/form_edit', $data);
         }else{
             /*title header*/
-            $data['title'] = 'Contact Cente';
+            $data['title'] = 'Contact Center';
             /*breadcrumbs for create or add row*/
             $this->breadcrumbs->push('Add function', 'Hdesk_contact/'.strtolower(get_class($this)).'/form');
             /*initialize flag for form add*/

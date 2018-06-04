@@ -614,10 +614,47 @@
               </div><!-- /.ace-settings-box -->
             </div>
             <!-- /.ace-settings-container -->
+            <!-- modal pengaduan detail -->
+            <div id="ModalPengaduanDetail" class="modal fade" role="dialog">
+              <div class="modal-dialog modal-lg">
 
+                <!-- Modal content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Title</h4>
+                  </div>
+                  <div class="modal-body">
+                    <div id="modalContent"></div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div id="ModalError" class="modal fade" role="dialog">
+              <div class="modal-dialog modal-lg">
+                <!-- Modal content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Peringatan</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>Error</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <!-- /section:settings.box -->
                 <!-- PAGE CONTENT BEGINS -->
                   <div id="page-area-content">
+
                     <div class="row">
                       <!-- content here -->
                         <div class="page-header">
@@ -702,9 +739,10 @@
     <!-- page specific plugin scripts -->
 
     <script src="<?php echo base_url()?>/assets/js/dataTables/jquery.dataTables.js"></script>
-<script src="<?php echo base_url()?>/assets/js/dataTables/jquery.dataTables.bootstrap.js"></script>
-<script src="<?php echo base_url()?>/assets/js/dataTables/extensions/TableTools/js/dataTables.tableTools.js"></script>
-<script src="<?php echo base_url()?>/assets/js/dataTables/extensions/ColVis/js/dataTables.colVis.js"></script>
+    <script src="<?php echo base_url()?>/assets/js/dataTables/jquery.dataTables.bootstrap.js"></script>
+    <script src="<?php echo base_url()?>/assets/js/dataTables/extensions/TableTools/js/dataTables.tableTools.js"></script>
+    <script src="<?php echo base_url()?>/assets/js/dataTables/extensions/ColVis/js/dataTables.colVis.js"></script>
+    
 
     <!-- ace scripts -->
     <script src="<?php echo base_url()?>assets/js/ace/elements.scroller.js"></script>
@@ -752,12 +790,43 @@
     <script src="<?php echo base_url()?>docs/assets/js/language/html.js"></script>
     <script src="<?php echo base_url()?>docs/assets/js/language/css.js"></script>
     <script src="<?php echo base_url()?>docs/assets/js/language/javascript.js"></script> -->
+    <script type="text/javascript">
+      jQuery(function($) {
+        $('.dialogs,.comments').ace_scroll({
+          size: 300
+          });
+      })
+
+      function showModalPDF(no_registrasi, title, type)
+      {
+         $.ajax({
+            url : '<?php echo base_url().'casemix/Csm_billing_pasien/showPDFResumePasien/' ?>'+no_registrasi+'/'+type,
+            type: "POST",
+            dataType: "JSON",
+            processData: false,
+            success: function(data, textStatus, jqXHR, responseText)
+            {
+                $("#ModalPengaduanDetail .modal-title").html(title);
+                $("#ModalPengaduanDetail").modal();
+                $("#modalContent").html(data.html);
+            },
+            error: function (jqXHR, textStatus, errorThrown)
+            {
+                $("#ModalError").modal("show");
+            }
+        });
+
+         
+      }
+
+    </script>
+
      <script src="<?php echo base_url()?>assets/js/custom/menu_load_page.js"></script>
 
      <script src="<?php echo base_url()?>assets/chart/highcharts.js"></script>
     <script src="<?php echo base_url()?>assets/chart/modules/exporting.js"></script>
     <script type="text/javascript">
-      jQuery(function($) {
+      /*jQuery(function($) {
 
         $('#graf').highcharts({
             chart: {
@@ -847,8 +916,10 @@
         });
 
 
-       });
-    </script>
+       });*/
 
+      
+    </script>
+    
   </body>
 </html>

@@ -1,5 +1,4 @@
 <?php
-
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
@@ -17,132 +16,86 @@ class Csm_billing_pasien extends MX_Controller {
         }
         /*load model*/
         $this->load->model('Csm_billing_pasien_model', 'Csm_billing_pasien');
+        /*load module*/
+        $this->load->module('Templates/Templates.php');
+        $this->load->module('Templates/Export_data.php');
+        Modules::run('Templates/Export_data');
         /*enable profiler*/
         $this->output->enable_profiler(false);
 
     }
 
     public function index() { 
-        //echo '<pre>';print_r($this->session->all_userdata());
         /*define variable data*/
-        $flaging = isset($_GET['flag'])?'('.$_GET['flag'].')':'';
         $data = array(
-            'title' => 'Billing Pasien '.$flaging.'',
+            'title' => 'Billing Pasien',
             'breadcrumbs' => $this->breadcrumbs->show()
         );
         /*load view index*/
         $this->load->view('Csm_billing_pasien/index', $data);
     }
 
-    public function form()
-    {
-        $id = isset($_GET['id'])?$_GET['id']:'';
-        $flaging = isset($_GET['flag'])?'('.$_GET['flag'].')':'';
-        /*show breadcrumbs*/
-        $data['breadcrumbs'] = $this->breadcrumbs->show();
-
-        /*if id is not null then will show form edit*/
-        if( $id != '' ){
-            /*title header*/
-            $data['title'] = 'Billing Pasien '.$flaging.'';
-            /*breadcrumbs for edit*/
-            $this->breadcrumbs->push('Edit function', 'Csm_billing_pasien/'.strtolower(get_class($this)).'/'.__FUNCTION__.'/'.$id);
-            /*get value by id*/
-            $data['value'] = $this->Csm_billing_pasien->get_by_id($id);
-            /*initialize flag for form*/
-            $data['flag'] = "update";
-            /*load form view*/
-            $this->load->view('Csm_billing_pasien/form_edit', $data);
-        }else{
-            /*title header*/
-            $data['title'] = 'Contact Cente';
-            /*breadcrumbs for create or add row*/
-            $this->breadcrumbs->push('Add function', 'Csm_billing_pasien/'.strtolower(get_class($this)).'/form');
-            /*initialize flag for form add*/
-            $data['flag'] = "create";
-            /*load form view*/
-            $this->load->view('Csm_billing_pasien/form', $data);
-        }
-        
-        
-    }
-
+    
     /*function for view data only*/
-    public function show()
+    public function editBilling($no_registrasi, $tipe)
     {
-        $id = $_GET['id'];
-        $flaging = isset($_GET['flag'])?'('.$_GET['flag'].')':'';
         /*breadcrumbs for view*/
-        $this->breadcrumbs->push('View function', 'Csm_billing_pasien/'.strtolower(get_class($this)).'/'.__FUNCTION__.'/'.$id);
+        $this->breadcrumbs->push('Edit function', 'Csm_billing_pasien/'.strtolower(get_class($this)).'/'.__FUNCTION__.'/'.$no_registrasi);
         /*define data variabel*/
-        $data['value'] = $this->Csm_billing_pasien->get_by_id($id);
-        $data['title'] = 'Billing Pasien '.$flaging.'';
-        $data['flag'] = "read";
-        $data['flag_data'] = $_GET['flag'];
-        $data['breadcrumbs'] = $this->breadcrumbs->show();
         /*load form view*/
-        $this->load->view('Csm_billing_pasien/form_edit', $data);
-    }
-
-
-    public function get_data()
-    {
-        /*get data from model*/
-        $list = $this->Csm_billing_pasien->get_datatables();
-        $data = array();
-        $no = $_POST['start'];
-        foreach ($list as $row_list) {
-            $no++;
-            $row = array();
-            $row[] = '<div class="center">
-                        <label class="pos-rel">
-                            <input type="checkbox" class="ace" name="selected_id[]" value="'.$row_list->hpdesk_contact_id.'"/>
-                            <span class="lbl"></span>
-                        </label>
-                      </div>';
-            $row[] = $row_list->hpdesk_contact_id;
-            $row[] = '';
-            /*$row[] = '<div class="center">
-                        '.$this->authuser->show_button('casemix/Csm_billing_pasien','R',$row_list->hpdesk_contact_id,2).'
-                        '.$this->authuser->show_button('casemix/Csm_billing_pasien','U',$row_list->hpdesk_contact_id,2).'
-                        '.$this->authuser->show_button('casemix/Csm_billing_pasien','D',$row_list->hpdesk_contact_id,2).'
-                      </div>'; */
-            $row[] = '<div class="center">'.$row_list->hpdesk_contact_id.'</div>';
-            $row[] = '<div class="center">'.$row_list->hpdesk_contact_id.'</div>';
-            $row[] = strtoupper($row_list->hpdesk_contact_name);
-            $row[] = $row_list->hpdesk_contact_address;
-            $row[] = $row_list->hpdesk_contact_home;
-            $row[] = $row_list->hpdesk_contact_hp_1.' / '.$row_list->hpdesk_contact_hp_2.' / '.$row_list->hpdesk_contact_hp_3;
-            $row[] = $row_list->hpdesk_contact_note;
-            $row[] = ($row_list->is_active == 'Y') ? '<div class="center"><span class="label label-sm label-success">Active</span></div>' : '<div class="center"><span class="label label-sm label-danger">Not active</span></div>';
-                   
-            $data[] = $row;
+        $view_name = ($tipe=='RJ')?'form_edit':'form_edit_ri';
+        $title_name = ($tipe=='RJ')?'Rawat Jalan':'Rawat Inap';
+        $data['form_type'] = $tipe;
+        $data['value'] = $this->Csm_billing_pasien->get_by_id($no_registrasi);
+        $data['title'] = 'Billing Pasien '.$title_name.'';
+        $data['breadcrumbs'] = $this->breadcrumbs->show();
+        
+        /*get data trans pelayanan by no registrasi from sirs*/
+        $sirs_data = json_decode($this->Csm_billing_pasien->getDetailData($no_registrasi));
+        //print_r($sirs_data);die;
+        /*cek apakah data sudah pernah diinsert ke database atau blm*/
+        if( $this->Csm_billing_pasien->checkExistingData($no_registrasi) ){
+            /*no action if data exist, continue to view data*/
+        }else{
+        /*jika data belum ada atau belum pernah diinsert, maka insert ke table*/
+            /*insert data untuk pertama kali*/
+            if( $sirs_data->group && $sirs_data->kasir_data && $sirs_data->trans_data )
+            $this->Csm_billing_pasien->insertDataFirstTime($sirs_data, $no_registrasi);
         }
 
-        $output = array(
-                        "draw" => $_POST['draw'],
-                        "recordsTotal" => $this->Csm_billing_pasien->count_all(),
-                        "recordsFiltered" => $this->Csm_billing_pasien->count_filtered(),
-                        "data" => $data,
-                );
-        //output to json format
-        echo json_encode($output);
+        $dataBilling = $this->getBillingLocal($no_registrasi, $tipe);
+        $data['reg'] = (count($dataBilling['reg_data']) > 0) ? $dataBilling['reg_data'] : [] ;
+
+        if( $tipe=='RJ' ){
+            $group = array();
+            foreach ($dataBilling['billing'] as $value) {
+                /*group berdasarkan nama jenis tindakan*/
+                $group[$value->csm_bp_nama_jenis_tindakan][] = $value;
+            }
+            $data['group'] = $group;
+            $data['resume'] = $dataBilling['resume'];
+        }else{
+            $data['content_view'] = $this->Csm_billing_pasien->getDetailBillingRI($no_registrasi, $tipe, $sirs_data);
+        }
+        
+        //echo '<pre>';print_r($data);die;
+        $this->load->view('Csm_billing_pasien/'.$view_name.'', $data);
     }
 
+    public function getBillingLocal($no_registrasi, $tipe){
+        return $this->Csm_billing_pasien->getBillingDataLocal($no_registrasi, $tipe);
+    }
+
+    
     public function process()
     {
-       
+        //print_r($_FILES);die;
+
         $this->load->library('form_validation');
         $val = $this->form_validation;
-        $val->set_rules('hpdesk_contact_name', 'Nama', 'trim|required');
-        $val->set_rules('hpdesk_contact_address', 'Alamat', 'trim|xss_clean');
-        $val->set_rules('hpdesk_contact_home', 'No Telp Rumah', 'trim|xss_clean');
-        $val->set_rules('hpdesk_contact_hp_1', 'No HP 1', 'trim|required');
-        $val->set_rules('hpdesk_contact_hp_2', 'No HP 2', 'trim|xss_clean');
-        $val->set_rules('hpdesk_contact_hp_3', 'No HP 3', 'trim|xss_clean');
-        $val->set_rules('hpdesk_contact_note', 'Ketarangan', 'trim|xss_clean');
-        $val->set_rules('flag', 'Flag', 'trim|required');
-
+        $val->set_rules('csm_rp_no_sep', 'No.SEP', 'trim|required');
+        $val->set_rules('csm_rp_tgl_masuk', 'Tanggal Masuk', 'trim|required');
+        $val->set_rules('csm_rp_tgl_keluar', 'Tanggal Keluar', 'trim|required');
         $val->set_message('required', "Silahkan isi field \"%s\"");
 
         if ($val->run() == FALSE)
@@ -153,33 +106,84 @@ class Csm_billing_pasien extends MX_Controller {
         else
         {                       
             $this->db->trans_begin();
-            $id = ($this->input->post('id'))?$this->regex->_genRegex($this->input->post('id'),'RGXINT'):0;
+            $no_registrasi = ($this->input->post('no_registrasi_hidden'))?$this->regex->_genRegex($this->input->post('no_registrasi_hidden'),'RGXINT'):0;
 
+            /*csm_reg_pasien*/
             $dataexc = array(
-                'hpdesk_contact_name' => $this->regex->_genRegex($val->set_value('hpdesk_contact_name'), 'RGXQSL'),
-                'hpdesk_contact_address' => $this->regex->_genRegex($val->set_value('hpdesk_contact_address'), 'RGXQSL'),
-                'hpdesk_contact_home' => $this->regex->_genRegex($val->set_value('hpdesk_contact_home'), 'RGXQSL'),
-                'hpdesk_contact_hp_1' => $this->regex->_genRegex($val->set_value('hpdesk_contact_hp_1'), 'RGXQSL'),
-                'hpdesk_contact_hp_2' => $this->regex->_genRegex($val->set_value('hpdesk_contact_hp_2'), 'RGXQSL'),
-                'hpdesk_contact_hp_3' => $this->regex->_genRegex($val->set_value('hpdesk_contact_hp_3'), 'RGXQSL'),
-                'hpdesk_contact_note' => $this->regex->_genRegex($val->set_value('hpdesk_contact_note'), 'RGXQSL'),
-                'flag' => $this->regex->_genRegex($val->set_value('flag'), 'RGXQSL'),
-                'is_active' => $this->input->post('is_active'),
+                'csm_rp_no_sep' => $this->regex->_genRegex($val->set_value('csm_rp_no_sep'), 'RGXQSL'),
+                'csm_rp_tgl_masuk' => $this->regex->_genRegex($val->set_value('csm_rp_tgl_masuk'), 'RGXQSL'),
+                'csm_rp_tgl_keluar' => $this->regex->_genRegex($val->set_value('csm_rp_tgl_keluar'), 'RGXQSL'),
             );
-            //print_r($dataexc);die;
-            if($id==0){
+
+            if($no_registrasi==0){
                 $dataexc['created_date'] = date('Y-m-d H:i:s');
                 $dataexc['created_by'] = $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL');
-                $this->db->insert('hpdesk_mst_contact', $dataexc);
+                $exc_qry = $this->db->insert('csm_reg_pasien', $dataexc);
                 $newId = $this->db->insert_id();
-                $this->logs->save('hpdesk_mst_contact', $newId, 'insert new record', json_encode($dataexc));
+                $this->logs->save('csm_reg_pasien', $newId, 'insert new record', json_encode($dataexc));
             }else{
                 $dataexc['updated_date'] = date('Y-m-d H:i:s');
                 $dataexc['updated_by'] = $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL');
-                $this->db->update('hpdesk_mst_contact', $dataexc, array('hpdesk_contact_id' => $id));
-                $newId = $id;
-                $this->logs->save('hpdesk_mst_contact', $newId, 'update record', json_encode($dataexc));
+                $exc_qry = $this->db->update('csm_reg_pasien', $dataexc, array('no_registrasi' => $no_registrasi));
+                $newId = $no_registrasi;
+                $this->logs->save('csm_reg_pasien', $newId, 'update record', json_encode($dataexc));
             }
+
+            $this->db->update('csm_reg_pasien', array('is_submitted' => 'Y') , array('no_registrasi' => $no_registrasi));
+
+            
+            $type = $this->input->post('form_type');
+            /*created document name*/
+            /*clean first data*/
+            //$this->db->delete('csm_dokumen_export', array('no_registrasi' => $no_registrasi));
+
+            $createDocument = $this->Csm_billing_pasien->createDocument($no_registrasi, $type);
+            //echo '<pre>';print_r($createDocument);die;
+            
+            foreach ($createDocument as $k_cd => $v_cd) {
+                # code...
+                $explode = explode('-', $v_cd);
+                /*explode result*/
+                $named = str_replace('BILL','',$explode[0]);
+                $no_mr = $explode[1];
+                $exp_no_registrasi = $explode[2];
+                $unique_code = $explode[3];
+
+                /*create and save download file pdf*/
+                if( $this->getContentPDF($exp_no_registrasi, $named, $unique_code, 'F') ) :
+                /*save document to database*/
+                /*csm_reg_pasien*/
+                $filename = $named.'-'.$no_mr.$exp_no_registrasi.$unique_code.'.pdf';
+                
+                $doc_save = array(
+                    'no_registrasi' => $this->regex->_genRegex($exp_no_registrasi, 'RGXQSL'),
+                    'csm_dex_nama_dok' => $this->regex->_genRegex($filename, 'RGXQSL'),
+                    'csm_dex_jenis_dok' => $this->regex->_genRegex($v_cd, 'RGXQSL'),
+                    'csm_dex_fullpath' => $this->regex->_genRegex('uploaded/casemix/'.$filename.'', 'RGXQSL'),
+                );
+                $doc_save['created_date'] = date('Y-m-d H:i:s');
+                $doc_save['created_by'] = $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL');
+                /*check if exist*/
+                if ( $this->Csm_billing_pasien->checkIfDokExist($exp_no_registrasi, $filename) == FALSE ) {
+                    $this->db->insert('csm_dokumen_export', $doc_save);
+                }
+                endif;
+                /*insert database*/
+            }
+            
+            /*insert dokumen adjusment*/
+            if(isset($_FILES['pf_file'])){
+                
+                $this->upload_file->CsmdoUploadMultiple(array(
+                    'name' => 'pf_file',
+                    'path' => 'uploaded/casemix/',
+                    'ref_id' => $no_registrasi,
+                    'ref_table' => 'csm_dokumen_export',
+                    'flag' => 'dokumen_export',
+                ));
+            }
+
+
             if ($this->db->trans_status() === FALSE)
             {
                 $this->db->trans_rollback();
@@ -193,101 +197,281 @@ class Csm_billing_pasien extends MX_Controller {
         }
     }
 
-    public function delete()
+    public function get_data()
     {
-        $id=$this->input->post('ID')?$this->regex->_genRegex($this->input->post('ID',TRUE),'RGXQSL'):null;
-        $toArray = explode(',',$id);
-        if($id!=null){
-            if($this->Csm_billing_pasien->delete_by_id($toArray)){
-                $this->logs->save('hpdesk_mst_contact', $id, 'delete record', '');
-                echo json_encode(array('status' => 200, 'message' => 'Proses Hapus Data Berhasil Dilakukan'));
-
-            }else{
-                echo json_encode(array('status' => 301, 'message' => 'Maaf Proses Hapus Data Gagal Dilakukan'));
+        /*get data from model*/
+        if(isset($_GET['num'])){
+            $list = $this->Csm_billing_pasien->get_datatables();
+            $data = array();
+            $no = $_POST['start'];
+            foreach ($list as $row_list) {
+                $no++;
+                $row = array();
+                $link = 'casemix/Csm_billing_pasien';
+                $kode_bag = ($row_list->kode_bagian_keluar!=null)?$row_list->kode_bagian_keluar:$row_list->kode_bagian_masuk;
+                $str_kode_bag = substr((string)$kode_bag, 0,2);
+                $str_type = ($str_kode_bag=='01' || $str_kode_bag=='02')?'RJ':'RI';
+                $row[] = '<div class="center">
+                            <label class="pos-rel">
+                                <input type="checkbox" class="ace" name="selected_id[]" value="'.$row_list->no_registrasi.'"/>
+                                <span class="lbl"></span>
+                            </label>
+                          </div>';
+                $row[] = $row_list->no_registrasi;
+                $row[] = $str_type;
+                $row[] = '';
+                $row[] = '<a href="#" onclick="getMenu('."'".$link.'/editBilling/'.$row_list->no_registrasi.''."/".$str_type."'".')">'.$row_list->no_registrasi.'</a>';
+                $row[] = '<div class="center">'.$row_list->no_sep.'</div>';
+                $row[] = $row_list->no_mr;
+                $row[] = strtoupper($row_list->nama_pasien);
+                $row[] = '<i class="fa fa-angle-double-right green"></i> '.$this->tanggal->formatDate($row_list->tgl_jam_masuk);
+                $row[] = '<i class="fa fa-angle-double-left red"></i> '.$this->tanggal->formatDate($row_list->tgl_jam_keluar);
+                $row[] = $row_list->nama_pegawai;
+                $row[] = $row_list->nama_bagian;
+                
+                $row[] = '<div class="center">'.$str_type.'</div>';
+                $status_reg = $this->Csm_billing_pasien->cekIfExist($row_list->no_registrasi);
+                $row[] = ($status_reg->num_rows() > 0)?'<div class="center"><i class="fa fa-check bigger-200 green"></i></div>':'';
+                       
+                $data[] = $row;
             }
         }else{
-            echo json_encode(array('status' => 301, 'message' => 'Tidak ada item yang dipilih'));
+            $data = array();
         }
         
+
+        $output = array(
+                        "draw" => $_POST['draw'],
+                        "recordsTotal" => $this->Csm_billing_pasien->count_all(),
+                        //"recordsFiltered" => $this->Csm_billing_pasien->count_filtered(),
+                        "data" => $data,
+                );
+        //print_r($output);die;
+        //output to json format
+        echo json_encode($output);
     }
 
-    public function get_pengaduan_dijadwalkan($agenda_id){
-        $html = '';
-        $html .= '<div class="col-sm-6">';
-        $html .= '<div><h3>Billing Pasien</h3></div>';
-        $html .= '<table class="table table-striped">';
-        $html .= '<tr>';
-            $html .= '<th width="30px">No</th>';
-            $html .= '<th width="100px">No.Reg</th>';
-            $html .= '<th>Nama Bagian</th>';
-            $html .= '<th width="100px">Billing (Rp.)</th>';
-        $html .= '</tr>';   
-        $html .= '<tr>';
-            $html .= '<td width="30px">1</td>';
-            $html .= '<td width="100px">41356</td>';
-            $html .= '<td>Farmasi</td>';
-            $html .= '<td width="100px" align="right">Rp. 250.000,-</td>';
-        $html .= '</tr>'; 
-        $html .= '<tr>';
-            $html .= '<td width="30px">2</td>';
-            $html .= '<td width="100px">41357</td>';
-            $html .= '<td>Radiologi</td>';
-            $html .= '<td width="100px" align="right">Rp. 125.000,-</td>';
-        $html .= '</tr>';
-        $html .= '<tr>';
-            $html .= '<td colspan="3" align="right"><b>Total</b></td>';
-            $html .= '<td width="100px" align="right"><b>Rp. 375.000,-</b></td>';
-        $html .= '</tr>';   
-        $html .= '</table>';
-        $html .= '<br>';
-        $html .= '<table class="table table-striped">';
-        $html .= '<tr>';
-            $html .= '<th align="right">Dokter</th>';
-            $html .= '<th align="right">Administrasi</th>';
-            $html .= '<th align="right">Obat/Farmasi</th>';
-            $html .= '<th align="right">Penunjang Medis</th>';
-            $html .= '<th align="right">Tindakan</th>';
-        $html .= '</tr>';
-        $html .= '<tr>';
-            $html .= '<td align="right">Rp. 75.000,-</td>';
-            $html .= '<td align="right">Rp. 25.000,-</td>';
-            $html .= '<td align="right">Rp. 250.000,-</td>';
-            $html .= '<td align="right">Rp. 0,-</td>';
-            $html .= '<td align="right">Rp. 0,-</td>';
-        $html .= '</tr>'; 
-        $html .= '</table>'; 
-
-        $html .= '</div>';
-
-        $html .= '<div class="col-sm-6">';
-        $html .= '<div><h3>Resume Pasien</h3></div>';
-        $html .= '<table class="table table-striped">';  
-        $html .= '<tr>';
-            $html .= '<th>No</th>';
-            $html .= '<th>Nama Resume</th>';
-            $html .= '<th>Tampilkan PDF</th>';
-        $html .= '</tr>';
-        $html .= '<tr>';
-            $html .= '<td>1</td>';
-            $html .= '<td>Billing Pasien</td>';
-            $html .= '<td><a href="#">Tampilkan</a></td>';
-        $html .= '</tr>';
-        $html .= '<tr>';
-            $html .= '<td>2</td>';
-            $html .= '<td>Hasil Penunjang Medis</td>';
-            $html .= '<td><a href="#">Tampilkan</a></td>';
-        $html .= '</tr>';
-        $html .= '</table>';
-        $html .= '<br>';
-        $html .= '<a href="#" class="btn btn-xs btn-success"><i class="ace-icon glyphicon glyphicon-plus bigger-50"></i>Merge Files</a>';
-        $html .= '</div>';
+    public function getDetail($no_registrasi, $tipe){
+        
+        /*get detail data billing*/
+        $data = json_decode($this->Csm_billing_pasien->getDetailData($no_registrasi));
+        
+        /*cek apakah data sudah pernah diinsert ke database atau blm*/
+        if( $this->Csm_billing_pasien->checkExistingData($no_registrasi) ){
+            /*no action if data exist, continue to view data*/
+        }else{
+        /*jika data belum ada atau belum pernah diinsert, maka insert ke table*/
+            /*insert data untuk pertama kali*/
+            if( $data->group && $data->kasir_data && $data->trans_data )
+            $this->Csm_billing_pasien->insertDataFirstTime($data, $no_registrasi);
+        }
+        //print_r($data);die;
+        if($tipe=='RJ'){
+            $html = $this->Csm_billing_pasien->getDetailBillingRJ($no_registrasi, $tipe, $data);
+        }else{
+            $html = $this->Csm_billing_pasien->getDetailBillingRI($no_registrasi, $tipe, $data);
+        }
 
         echo json_encode(array('html' => $html));
     }
 
+    public function find_data()
+    {   
+        $output = array(
+                        "recordsTotal" => $this->Csm_billing_pasien->count_all(),
+                        "data" => $_POST,
+                );
+        echo json_encode($output);
+    }
+
+    public function getHtmlData($params, $no_registrasi, $flag, $pm, $rb=''){
+
+        $temp = new Templates;
+        /*header html*/
+        /*get detail data billing*/
+        $data = json_decode($this->Csm_billing_pasien->getDetailData($no_registrasi));
+        
+        $html = '';
+
+        switch ($flag) {
+            case 'RJ':
+                $html .= $temp->setGlobalHeaderTemplate();
+                $html .= $temp->setGlobalProfilePasienTemplate($data);
+                $html .= $temp->setGlobalContentBilling($temp->TemplateBillingRJ($no_registrasi, $flag, $data));
+                $html .= $temp->setGlobalFooterBilling();
+                break;
+            case 'RI':
+                $html .= $temp->setGlobalHeaderTemplate();
+                $html .= $temp->setGlobalProfilePasienTemplateRI($data);
+                $html .= $temp->setGlobalContentBilling($temp->TemplateBillingRI($no_registrasi, $flag, $data, $rb));
+                $html .= $temp->setGlobalFooterBillingRI();
+
+                break;
+            case 'RAD':
+                $html .= $temp->setGlobalHeaderTemplate();
+                $html .= $temp->setGlobalProfilePasienTemplatePM($data, $flag, $pm);
+                $html .= $temp->setGlobalContentBilling($temp->TemplateHasilPM($no_registrasi, $flag, $data, $pm));
+                $html .= $temp->setGlobalFooterBillingPM($data->reg_data->nama_pegawai, $flag, $pm);
+                break;
+            case 'LAB':
+                $html .= $temp->setGlobalHeaderTemplate();
+                $html .= $temp->setGlobalProfilePasienTemplatePM($data, $flag, $pm);
+                $html .= $temp->setGlobalContentBilling($temp->TemplateHasilPM($no_registrasi, $flag, $data, $pm));
+                $html .= $temp->setGlobalFooterBillingPM($data->reg_data->nama_pegawai, $flag, $pm);
+                break;
+            
+            default:
+                # code...
+                break;
+        }
+        
+        return json_encode( array('html' => $html, 'data' => $params) );
+    }
+
+    public function getRincianBilling($noreg, $tipe, $field){
+        $temp = new Templates;
+        /*header html*/
+        $html = '';
+        $html .= $temp->TemplateRincianRI($noreg, $tipe, $field);
+        
+        echo json_encode(array('html' => $html));
+    }
+
+    public function getRincianBillingData($noreg, $tipe, $field){
+        $temp = new Templates;
+        /*header html*/
+        $html = '';
+        $html .= $temp->TemplateRincianRI($noreg, $tipe, $field);
+         
+        return json_encode(array('html' => $html));
+    }
+
+    public function getContentPDF($no_registrasi, $flag, $pm, $act_code=''){
+
+      /*get content data*/
+      $data = $this->getBillingLocal($no_registrasi, $flag); 
+
+      /*get content html*/
+      $html = json_decode( $this->getHtmlData($data, $no_registrasi, $flag, $pm) );
+      
+      /*generate pdf*/
+      $this->exportPdf($html, $flag, $pm, $act_code); 
+      
+      return true;
+
+    }
+
+    public function exportPdf($data, $flag, $pm, $act_code='') { 
+        
+        $this->load->library('pdf');
+        $reg_data = $data->data->reg_data;
+        /*default*/
+        $action = ($act_code=='')?'I':$act_code;
+        /*filename and title*/
+        $filename = $flag.'-'.$reg_data->csm_rp_no_mr.$reg_data->no_registrasi.$pm;
+
+        $tanggal = new Tanggal();
+        $pdf = new TCPDF('P', PDF_UNIT, array(470,280), true, 'UTF-8', false);
+        $pdf->SetCreator(PDF_CREATOR);
+        
+        $pdf->SetAuthor('Rumah Sakit Setia Mitra');
+        $pdf->SetTitle(''.$filename.'');
+
+    // remove default header/footer
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+
+    // set default monospaced font
+        $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+    // set margins
+        $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT,PDF_MARGIN_BOTTOM);
+
+    // set auto page breaks
+        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+    // set image scale factor
+        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+    
+    // auto page break //
+        $pdf->SetAutoPageBreak(TRUE, 30);
+
+        //set page orientation
+        
+    // set some language-dependent strings (optional)
+        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
+            require_once(dirname(__FILE__).'/lang/eng.php');
+            $pdf->setLanguageArray($l);
+        }
+        
+        $pdf->SetFont('helvetica', '', 9);
+        $pdf->ln();
+
+        //kotak form
+        $pdf->AddPage('P', 'A4');
+        //$pdf->setY(10);
+        $pdf->setXY(5,20,5,5);
+        $pdf->SetMargins(10, 10, 10, 10); 
+        /* $pdf->Cell(150,42,'',1);*/
+        $html = <<<EOD
+        <link rel="stylesheet" href="'.file_get_contents(_BASE_PATH_.'/assets/css/bootstrap.css)'" />
+EOD;
+        $html .= $data->html;
+        $result = $html;
+
+        // output the HTML content
+        $pdf->writeHTML($result, true, false, true, false, '');
+
+        /*save to folder*/
+        $pdf->Output('uploaded/casemix/'.$filename.'.pdf', ''.$action.''); 
+
+        /*show pdf*/
+        //$pdf->Output(''.$reg_data->no_registrasi.'.pdf', 'I'); 
+        /*download*/
+        //$pdf->Output(''.$reg_data->no_registrasi.'.pdf', 'D'); 
+        
+    }
+
+    public function mergePDFFiles($no_registrasi, $tipe){
+        /*get doc*/
+
+        $reg_data = $this->Csm_billing_pasien->getRegDataLocal($no_registrasi);
+        $doc_pdf = $this->Csm_billing_pasien->getDocumentPDF($no_registrasi);
+        //echo '<pre>';print_r($doc_pdf);die;
+        /*save merged file*/
+        $month_saved = date("M",strtotime($reg_data->csm_rp_tgl_masuk));
+        $year_saved = date("Y",strtotime($reg_data->csm_rp_tgl_masuk));
+        $datasaved = array(
+            'no_registrasi' => $no_registrasi,
+            'tgl_transaksi_kasir' => $reg_data->csm_rp_tgl_keluar,
+            'no_sep' => $reg_data->csm_rp_no_sep,
+            'csm_dk_filename' => $reg_data->csm_rp_no_sep.'.pdf',
+            'csm_dk_fullpath' => 'uploaded/casemix/merge-'.$month_saved.'-'.$year_saved.'/'.$tipe.'/'.$reg_data->csm_rp_no_sep.'.pdf',
+            'csm_dk_total_klaim' => $this->Csm_billing_pasien->getTotalBilling($no_registrasi, $tipe),
+            'csm_dk_tipe' => $tipe,
+            'created_date' => date('Y-m-d H:i:s'),
+            'created_by' => $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL')
+            );
+        /*check if exist*/
+        if( $this->db->get_where('csm_dokumen_klaim', array('no_sep' => $reg_data->csm_rp_no_sep))->num_rows() > 0){
+            $this->db->update('csm_dokumen_klaim', $datasaved, array('no_sep' => $reg_data->csm_rp_no_sep));
+        }else{
+            $this->db->insert('csm_dokumen_klaim', $datasaved);
+        }
+
+
+        $fields_string = "";
+        foreach($doc_pdf as $key=>$value) {
+            $month = date("M",strtotime($value->csm_rp_tgl_masuk));
+            $year = date("Y",strtotime($value->csm_rp_tgl_masuk));
+            $fields_string .= $value->csm_dex_id.'='.$value->csm_dex_nama_dok.'&sep='.$value->csm_rp_no_sep.'&tipe='.$tipe.'&month='.$month.'&year='.$year.'&';
+        }
+
+        rtrim($fields_string,'&');
+        $url = base_url().'ApiMerge/index.php?action=download&noreg='.$no_registrasi.'&'.$fields_string;
+        header("Location:".$url);
+    }
 
 }
-
-
 /* End of file example.php */
 /* Location: ./application/functiones/example/controllers/example.php */

@@ -58,7 +58,7 @@ $autoload['packages'] = array();
 |
 |	$autoload['libraries'] = array('user_agent' => 'ua');
 */
-$autoload['libraries'] = array('regex','encryption','template','session','database','user_agent', 'api','tanggal','breadcrumbs','logs','authuser', 'master','upload_file');
+$autoload['libraries'] = array('regex','encryption','template','session','database','user_agent', 'api','tanggal','breadcrumbs','logs','authuser', 'master','upload_file', 'lib_table');
 
 /*
 | -------------------------------------------------------------------
