@@ -37,8 +37,9 @@ class Migration extends MX_Controller {
 
     public function get_data()
     {
-        //print_r($_GET);die;
+        //print_r($_GET['num']);die;
         /*get data from model*/
+        if( isset($_GET['num']) AND $_GET['num'] != "" ){
             $list = $this->Migration->get_datatables();
             $data = array();
             $no = $_POST['start'];
@@ -52,6 +53,7 @@ class Migration extends MX_Controller {
                 $link = 'casemix/Migration';
 
                 $status_reg = $this->Migration->cekIfExist($row_list->no_registrasi);
+                $reg_data = $status_reg->row();
 
                 $row[] = '<div class="center">
                             <label class="pos-rel">
@@ -82,7 +84,7 @@ class Migration extends MX_Controller {
                 
                 $row[] = '<div class="center"><input type="hidden" id="type_'.$row_list->no_registrasi.'" class="form-control" name="form_type['.$row_list->no_registrasi.']" value="'.$str_type.'">'.$str_type.'</div>';
                 
-                $row[] = ($status_reg->num_rows() > 0)?'<div class="center"><i class="fa fa-check bigger-200 green"></i></div>':'';
+                $row[] = ($status_reg->num_rows() > 0)?'<div class="center"><i class="fa fa-check bigger-200 green"></i><br><span style="font-size:11px">By : '.$reg_data->created_by.'</span></div>':'';
                 $row[] = '<div class="center"><a href="#" class="btn btn-xs btn-primary" onclick="submit('.$row_list->no_registrasi.')"><i class="ace-icon fa fa-saves bigger-50"></i>Submit</a></div>';
 
                 if ( $status_reg->num_rows() > 0 ) {
@@ -90,15 +92,22 @@ class Migration extends MX_Controller {
                 }else{
                     $row[] = '<div class="center" style="color:red" id="merge_'.$row_list->no_registrasi.'"">Waiting..</div>';
                 }
-                
                        
                 $data[] = $row;
             }
+            $recordsTotal = $this->Migration->count_all();
+            $recordsFiltered = $this->Migration->count_filtered();
+        }else{
+            $data = array();
+            $recordsTotal = 0;
+            $recordsFiltered = 0;
+        }
+            
             
         $output = array(
                         "draw" => $_POST['draw'],
-                        "recordsTotal" => $this->Migration->count_all(),
-                        "recordsFiltered" => $this->Migration->count_filtered(),
+                        "recordsTotal" => $recordsTotal,
+                        "recordsFiltered" => $recordsFiltered,
                         "data" => $data,
                 );
         //print_r($output);die;

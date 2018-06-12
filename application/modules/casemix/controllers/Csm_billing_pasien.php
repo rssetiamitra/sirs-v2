@@ -303,7 +303,7 @@ class Csm_billing_pasien extends MX_Controller {
                 $html .= $temp->setGlobalHeaderTemplate();
                 $html .= $temp->setGlobalProfilePasienTemplateRI($data);
                 $html .= $temp->setGlobalContentBilling($temp->TemplateBillingRI($no_registrasi, $flag, $data, $rb));
-                $html .= $temp->setGlobalFooterBillingRI();
+                $html .= $temp->setGlobalFooterBillingRI($data);
 
                 break;
             case 'RAD':

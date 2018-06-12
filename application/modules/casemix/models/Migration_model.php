@@ -8,7 +8,7 @@ class Migration_model extends CI_Model {
 	var $table = 'tc_registrasi';
 	var $column = array('tc_registrasi.no_registrasi','tc_registrasi.no_sep','tc_registrasi.kode_bagian_masuk', 'tc_registrasi.kode_bagian_keluar','mt_karyawan.nama_pegawai');
 	var $select = 'tc_registrasi.no_mr,tc_registrasi.no_registrasi,tc_registrasi.kode_perusahaan,tc_registrasi.kode_dokter,tc_registrasi.tgl_jam_masuk,tc_registrasi.tgl_jam_keluar,tc_registrasi.kode_bagian_masuk,tc_registrasi.kode_bagian_keluar,tc_registrasi.no_sep,tc_registrasi.umur, mt_master_pasien.nama_pasien, mt_master_pasien.jen_kelamin as jk, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai';
-	var $order = array('tc_registrasi.no_sep' => 'ASC');
+	var $order = array('tc_registrasi.no_sep' => 'ASC', 'tc_registrasi.tgl_jam_masuk' => 'DESC');
     var $fields = array('bill_kamar_perawatan','bill_kamar_icu','bill_tindakan_inap','bill_tindakan_oksigen','bill_tindakan_bedah','bill_tindakan_vk','bill_obat','bill_ambulance','bill_dokter','bill_apotik','bill_lain_lain','bill_adm','bill_ugd','bill_rad','bill_lab','bill_fisio','bill_klinik','bill_pemakaian_alat',
             );
 	
@@ -55,8 +55,8 @@ class Migration_model extends CI_Model {
             $this->sqlsrv->where("tc_registrasi.tgl_jam_masuk <= '".$_GET['todt']."'" );
         }
 
-        $this->sqlsrv->where('YEAR(tgl_jam_masuk)=2018');
-        $this->sqlsrv->where('MONTH(tgl_jam_masuk) >= 4');
+        $this->sqlsrv->where('YEAR(tgl_jam_masuk)>2016');
+        //$this->sqlsrv->where('MONTH(tgl_jam_masuk) >= 4');
         $this->sqlsrv->where(''.$this->table.'.kode_perusahaan', 120);
 		//$this->sqlsrv->where(''.$this->table.'.tgl_jam_keluar IS NOT NULL');
 

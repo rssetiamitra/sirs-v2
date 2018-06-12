@@ -162,7 +162,7 @@ class Templates extends MX_Controller {
             $html .= '<th coslpan="2" align="center"><hr></th>';
             $html .= '<th coslpan="2" align="center"><hr></th>';
         $html .= '</tr>'; 
-        $sum_subtotal = array();
+
         $no=1;
         foreach ($data->group as $k => $val) {
             $html .= '<tr>';
@@ -170,7 +170,6 @@ class Templates extends MX_Controller {
             $html .= '<td align="right"></td>';
             $html .= '</tr>';
             $no++; 
-
             foreach ($val as $value_data) {
                 $subtotal = (double)$value_data->bill_rs + (double)$value_data->bill_dr1 + (double)$value_data->bill_dr2 + (double)$value_data->lain_lain;
                 $html .= '<tr>';
@@ -179,9 +178,15 @@ class Templates extends MX_Controller {
                 $html .= '</tr>';
                 /*total*/
                 $sum_subtotal[] = $subtotal;
+                $sum_subtotal_peritems[$k][] = $subtotal;
                 /*resume billing*/
                 $resume_billing[] = $this->Csm_billing_pasien->resumeBillingRJ($value_data->jenis_tindakan, $value_data->kode_bagian, $subtotal);
-            }        
+            }     
+            $html .= '<tr>';
+            $html .= '<td align="right"><b>Subtotal</b></td>';
+            $html .= '<td align="right"><b>Rp. '.number_format(array_sum($sum_subtotal_peritems[$k])).',-</b></td>';
+            $html .= '</tr>';
+
         }
         $html .= '<tr>';
             $html .= '<td colspan="1" align="right"><b>TOTAL</b></td>';
@@ -313,7 +318,7 @@ class Templates extends MX_Controller {
 
         /*html data untuk tampilan*/
         $html .= '<div align="center"><b>RINCIAN BIAYA KESELURUHAN PASIEN RAWAT INAP</b></div>';
-        $html .= '<table class="table table-striped">';
+        $html .= '<table class="table table-striped" border="0">';
         $html .= '<hr>';
         $html .= '<tr>';
             $html .= '<th width="7%" align="center"><b>NO</b></th>';
@@ -327,9 +332,7 @@ class Templates extends MX_Controller {
                 $sum_subtotal[] = $val['subtotal'];
                 $html .= '<tr>';
                 $html .= '<td width="7%" align="center"><b>'.$no.'</b></td>';
-                $html .= '<td width="63%"><b>'.strtoupper($val['title']).'</b></td>';
-                $html .= '<td width="30%" align="right">&nbsp;</td>';
-                $html .= '<td width="20%" align="right">&nbsp;</td>';
+                $html .= '<td width="93%"><b>'.strtoupper($val['title']).'</b></td>';
                 $html .= '</tr>';
                 $no++;
                 /*rincian biaya*/
@@ -342,37 +345,28 @@ class Templates extends MX_Controller {
                     $html .= '<td width="10%">'.$value_rincian_billing_ri['tanggal'].'</td>';
                     $html .= '<td width="30%">'.$value_rincian_billing_ri['dokter'].'</td>';
                     $html .= '<td width="20%" align="right">'.number_format($value_rincian_billing_ri['subtotal']).'</td>';
-                    $html .= '<td width="30%" align="right">&nbsp;</td>';
                     $html .= '</tr>';
-                    $subtotal_rincian[] = $value_rincian_billing_ri['subtotal'];
+                    $subtotal_rincian[$val['field']][] = $value_rincian_billing_ri['subtotal'];
                 }
                 /*subtotal rincian*/
                     $html .= '<tr>';
-                    $html .= '<td width="7%" align="center"></td>';
-                    $html .= '<td width="33%">&nbsp;</td>';
-                    $html .= '<td width="15%">&nbsp;</td>';
-                    $html .= '<td width="15%">&nbsp;</td>';
-                    $html .= '<td width="30%" align="right"><b><i>Subtotal</i>&nbsp;&nbsp;&nbsp;'.number_format(array_sum($subtotal_rincian)).' </b></td>';
-                    $html .= '<td width="30%" align="right">&nbsp;</td>';
+                    $html .= '<td width="100%" align="right"><b><i>Subtotal</i>&nbsp;&nbsp;&nbsp;'.number_format(array_sum($subtotal_rincian[$val['field']])).' </b></td>';
                     $html .= '</tr>';
-
-               
-
             }
         }
         /*biaya materai*/
-        $html .= '<tr>';
-                $html .= '<td width="7%" align="center"><b>'.$no.'</b></td>';
-                $html .= '<td width="83%"><b>MATERAI</b></td>';
-                $html .= '<td width="10% " align="right"><b>6,000</b></td>';
-                $html .= '</tr>';
-        $html .= '<hr>';
+            $html .= '<tr>';
+                    $html .= '<td width="7%" align="center"><b>'.$no.'</b></td>';
+                    $html .= '<td width="73%"><b>MATERAI</b></td>';
+                    $html .= '<td width="20%" align="right"><b><i>Subtotal</i>&nbsp;&nbsp;&nbsp; 6,000 </b></td>';
+                    $html .= '</tr>';
+        //$html .= '<hr>';
 
         $total_plus_materai = array_sum($sum_subtotal) + 6000;
         $html .= '<tr>';
-            $html .= '<td colspan="2" width="79%" align="right"><b>TOTAL</b></td>';
-            $html .= '<td width="21%" align="right"><b>Rp. '.number_format($total_plus_materai).'</b></td>';
-        $html .= '</tr>';   
+                    $html .= '<td width="100%" align="right"><b>TOTAL Rp. '.number_format($total_plus_materai).'</b></td>';
+                    $html .= '</tr>';
+
         $html .= '</table>';
 
         else :
@@ -389,6 +383,7 @@ class Templates extends MX_Controller {
         /*html data untuk tampilan*/
         /*get data hasil penunjang medis*/
         $pm_data = $this->Csm_billing_pasien->getHasilLab($data->reg_data, $pm);
+        
         //echo '<pre>';print_r($pm_data);die;
         $html = '';
         if($tipe=='RAD'){
@@ -407,10 +402,11 @@ class Templates extends MX_Controller {
                     <hr>';
                     $no=0;
                     foreach ($pm_data as $key => $value) {
+                        $name = ($value->nama_pemeriksaan)?$value->nama_pemeriksaan:$value->nama_tindakan;
                         $no++;
                         $html .= '<tr>
                                     <td width="30px" align="center">'.$no.'</td>
-                                    <td>'.$value->nama_pemeriksaan.'</td>
+                                    <td>'.$name.'</td>
                                     <td><p style="text-align:justify">'.nl2br($value->hasil).'</p></td>
                                     <td><p style="text-align:justify">'.nl2br($value->keterangan).'</p></td>
                                     <td></td>
@@ -525,7 +521,7 @@ class Templates extends MX_Controller {
         return $html;
     }
 
-    public function setGlobalFooterBillingRI(){
+    public function setGlobalFooterBillingRI($data){
         $html = '';
         $html .= '<br><br><br><table width="100%" cellspacing="0" cellpadding="0" border="0">
                     <tr> 
@@ -533,7 +529,7 @@ class Templates extends MX_Controller {
                         <td align="center" width="30%">&nbsp;</td>
                         <td align="center" width="40%">
                         <br><br>
-                        Jakarta,&nbsp;'.$this->tanggal->formatDate(date('Y-m-d')).'<br>
+                        Jakarta,&nbsp;'.$this->tanggal->formatDate($data->reg_data->tgl_jam_masuk).'<br>
                         Rumah Sakit Setia Mitra
                         <br/><br/><br/><br/> 
                         <br/> 

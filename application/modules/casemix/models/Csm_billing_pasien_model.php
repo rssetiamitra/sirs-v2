@@ -3,162 +3,162 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Csm_billing_pasien_model extends CI_Model {
 
-	private $sqlsrv;
+    private $sqlsrv;
 
-	var $table = 'tc_registrasi';
-	var $column = array('tc_registrasi.no_registrasi','tc_registrasi.no_sep','tc_registrasi.kode_bagian_masuk', 'tc_registrasi.kode_bagian_keluar');
-	var $select = 'tc_registrasi.*, mt_master_pasien.nama_pasien, mt_master_pasien.jen_kelamin as jk, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai';
-	var $order = array('tc_registrasi.tgl_jam_masuk' => 'DESC', 'tc_registrasi.no_esp' => 'ASC');
+    var $table = 'tc_registrasi';
+    var $column = array('tc_registrasi.no_registrasi','tc_registrasi.no_sep','tc_registrasi.kode_bagian_masuk', 'tc_registrasi.kode_bagian_keluar');
+    var $select = 'tc_registrasi.*, mt_master_pasien.nama_pasien, mt_master_pasien.jen_kelamin as jk, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai';
+    var $order = array('tc_registrasi.tgl_jam_masuk' => 'DESC', 'tc_registrasi.no_esp' => 'ASC');
     var $fields = array('bill_kamar_perawatan','bill_kamar_icu','bill_tindakan_inap','bill_tindakan_oksigen','bill_tindakan_bedah','bill_tindakan_vk','bill_obat','bill_ambulance','bill_dokter','bill_apotik','bill_lain_lain','bill_adm','bill_ugd','bill_rad','bill_lab','bill_fisio','bill_klinik','bill_pemakaian_alat','bill_tindakan_hd'
             );
-	
+    
 
-	public function __construct()
-	{
-		parent::__construct();
-		$this->sqlsrv = $this->load->database('sqlsrv', TRUE);
-	}
+    public function __construct()
+    {
+        parent::__construct();
+        $this->sqlsrv = $this->load->database('sqlsrv', TRUE);
+    }
 
-	private function _main_query(){
-		
-		$this->sqlsrv->select($this->select);
-		$this->sqlsrv->from($this->table);
-		$this->sqlsrv->join('mt_master_pasien', 'mt_master_pasien.no_mr='.$this->table.'.no_mr', 'left');
-		$this->sqlsrv->join('mt_bagian', 'mt_bagian.kode_bagian='.$this->table.'.kode_bagian_masuk', 'left');
-		$this->sqlsrv->join('mt_karyawan', 'mt_karyawan.kode_dokter='.$this->table.'.kode_dokter', 'left');
+    private function _main_query(){
+        
+        $this->sqlsrv->select($this->select);
+        $this->sqlsrv->from($this->table);
+        $this->sqlsrv->join('mt_master_pasien', 'mt_master_pasien.no_mr='.$this->table.'.no_mr', 'left');
+        $this->sqlsrv->join('mt_bagian', 'mt_bagian.kode_bagian='.$this->table.'.kode_bagian_masuk', 'left');
+        $this->sqlsrv->join('mt_karyawan', 'mt_karyawan.kode_dokter='.$this->table.'.kode_dokter', 'left');
 
-		if(isset($_GET['num']) AND $_GET['num']!=''){
-			//$this->sqlsrv->or_where("mt_master_pasien.nama_pasien LIKE '%".$_GET['num']."%' ");
-			$this->sqlsrv->or_where('no_sep', $_GET['num']);
-			$this->sqlsrv->or_where(''.$this->table.'.no_mr', $_GET['num']);
-		}
-		
-        $this->sqlsrv->where('YEAR(tgl_jam_masuk)=2018');
-        $this->sqlsrv->where('MONTH(tgl_jam_masuk) > 3');
-		$this->sqlsrv->where(''.$this->table.'.kode_perusahaan', 120);
+        if(isset($_GET['num']) AND $_GET['num']!=''){
+            //$this->sqlsrv->or_where("mt_master_pasien.nama_pasien LIKE '%".$_GET['num']."%' ");
+            $this->sqlsrv->or_where('no_sep', $_GET['num']);
+            $this->sqlsrv->or_where(''.$this->table.'.no_mr', $_GET['num']);
+        }
+        
+        $this->sqlsrv->where('YEAR(tgl_jam_masuk)>2016');
+        //$this->sqlsrv->where('MONTH(tgl_jam_masuk) > 3');
+        $this->sqlsrv->where(''.$this->table.'.kode_perusahaan', 120);
 
-		/*if (isset($_GET['frmdt']) AND $_GET['frmdt'] != '' || isset($_GET['todt']) AND $_GET['todt'] != '') {
-			$this->sqlsrv->where($this->table.".tgl_jam_masuk BETWEEN '".$_GET['frmdt']."' AND '".$_GET['todt']."' " );
-		}*/
+        /*if (isset($_GET['frmdt']) AND $_GET['frmdt'] != '' || isset($_GET['todt']) AND $_GET['todt'] != '') {
+            $this->sqlsrv->where($this->table.".tgl_jam_masuk BETWEEN '".$_GET['frmdt']."' AND '".$_GET['todt']."' " );
+        }*/
 
-		/*if (isset($_GET['todt']) AND $_GET['todt'] != '') {
-			$this->sqlsrv->where(''.$this->table.'.tgl_jam_keluar <= ',$_GET['todt'] );
-		}*/
-	}
+        /*if (isset($_GET['todt']) AND $_GET['todt'] != '') {
+            $this->sqlsrv->where(''.$this->table.'.tgl_jam_keluar <= ',$_GET['todt'] );
+        }*/
+    }
 
-	private function _get_datatables_query()
-	{
-		
-		$this->_main_query();
+    private function _get_datatables_query()
+    {
+        
+        $this->_main_query();
 
-		$i = 0;
-	
-		foreach ($this->column as $item) 
-		{
-			if($_POST['search']['value'])
-				($i===0) ? $this->sqlsrv->like($item, $_POST['search']['value']) : $this->sqlsrv->or_like($item, $_POST['search']['value']);
-			$column[$i] = $item;
-			$i++;
-		}
-		
-		if(isset($_POST['order']))
-		{
-			$this->sqlsrv->order_by($column[$_POST['order']['0']['column']], $_POST['order']['0']['dir']);
-		} 
-		else if(isset($this->order))
-		{
-			$order = $this->order;
-			$this->sqlsrv->order_by(key($order), $order[key($order)]);
-		}
-	}
-	
-	function get_datatables()
-	{
-		$this->_get_datatables_query();
-		if($_POST['length'] != -1)
-		$this->sqlsrv->limit($_POST['length'], $_POST['start']);
-		$query = $this->sqlsrv->get();
-		//print_r($this->sqlsrv->last_query());die;
-		return $query->result();
-	}
+        $i = 0;
+    
+        foreach ($this->column as $item) 
+        {
+            if($_POST['search']['value'])
+                ($i===0) ? $this->sqlsrv->like($item, $_POST['search']['value']) : $this->sqlsrv->or_like($item, $_POST['search']['value']);
+            $column[$i] = $item;
+            $i++;
+        }
+        
+        if(isset($_POST['order']))
+        {
+            $this->sqlsrv->order_by($column[$_POST['order']['0']['column']], $_POST['order']['0']['dir']);
+        } 
+        else if(isset($this->order))
+        {
+            $order = $this->order;
+            $this->sqlsrv->order_by(key($order), $order[key($order)]);
+        }
+    }
+    
+    function get_datatables()
+    {
+        $this->_get_datatables_query();
+        if($_POST['length'] != -1)
+        $this->sqlsrv->limit($_POST['length'], $_POST['start']);
+        $query = $this->sqlsrv->get();
+        //print_r($this->sqlsrv->last_query());die;
+        return $query->result();
+    }
 
-	function count_filtered()
-	{
-		$this->_get_datatables_query();
-		$query = $this->sqlsrv->get();
-		//print_r($query);die;
-		return $query->num_rows();
-	}
+    function count_filtered()
+    {
+        $this->_get_datatables_query();
+        $query = $this->sqlsrv->get();
+        //print_r($query);die;
+        return $query->num_rows();
+    }
 
-	public function count_all()
-	{
-		$this->_main_query();
-		return $this->sqlsrv->count_all_results();
-	}
+    public function count_all()
+    {
+        $this->_main_query();
+        return $this->sqlsrv->count_all_results();
+    }
 
-	/*get data transaksi*/
-	public function getTransData($no_registrasi){
-		$this->sqlsrv->select('tc_trans_pelayanan.*,mt_jenis_tindakan.jenis_tindakan as nama_jenis_tindakan, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai as nama_dokter');
-		$this->sqlsrv->from('tc_trans_pelayanan');
-		$this->sqlsrv->join('mt_jenis_tindakan','mt_jenis_tindakan.kode_jenis_tindakan=tc_trans_pelayanan.jenis_tindakan','left');
-		$this->sqlsrv->join('mt_bagian','mt_bagian.kode_bagian=tc_trans_pelayanan.kode_bagian','left');
-		$this->sqlsrv->join('mt_karyawan','mt_karyawan.kode_dokter=tc_trans_pelayanan.kode_dokter1','left');
-		$this->sqlsrv->where('no_registrasi', $no_registrasi);
+    /*get data transaksi*/
+    public function getTransData($no_registrasi){
+        $this->sqlsrv->select('tc_trans_pelayanan.*,mt_jenis_tindakan.jenis_tindakan as nama_jenis_tindakan, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai as nama_dokter');
+        $this->sqlsrv->from('tc_trans_pelayanan');
+        $this->sqlsrv->join('mt_jenis_tindakan','mt_jenis_tindakan.kode_jenis_tindakan=tc_trans_pelayanan.jenis_tindakan','left');
+        $this->sqlsrv->join('mt_bagian','mt_bagian.kode_bagian=tc_trans_pelayanan.kode_bagian','left');
+        $this->sqlsrv->join('mt_karyawan','mt_karyawan.kode_dokter=tc_trans_pelayanan.kode_dokter1','left');
+        $this->sqlsrv->where('no_registrasi', $no_registrasi);
         $this->sqlsrv->where('nama_tindakan IS NOT NULL');
         $this->sqlsrv->where('tc_trans_pelayanan.kode_tc_trans_kasir IN (SELECT kode_tc_trans_kasir FROM tc_trans_kasir WHERE no_registrasi='.$no_registrasi.' and kode_perusahaan = 120)');
-		$this->sqlsrv->where('tc_trans_pelayanan.status_nk', 1);
-		$this->sqlsrv->order_by('tc_trans_pelayanan.jenis_tindakan', 'ASC');
+        $this->sqlsrv->where('tc_trans_pelayanan.status_nk', 1);
+        $this->sqlsrv->order_by('tc_trans_pelayanan.jenis_tindakan', 'ASC');
         //print_r($this->sqlsrv->last_query());die;
-		return $this->sqlsrv->get()->result();
-	}
+        return $this->sqlsrv->get()->result();
+    }
 
-	public function get_by_id($id)
-	{
-		$this->_main_query();
-		if(is_array($id)){
-			$this->sqlsrv->where_in(''.$this->table.'.no_registrasi',$id);
-			$query = $this->sqlsrv->get();
-			return $query->result();
-		}else{
-			$this->sqlsrv->where(''.$this->table.'.no_registrasi',$id);
-			$query = $this->sqlsrv->get();
-			//echo '<pre>';print_r($this->sqlsrv->last_query());die;
-			return $query->row();
-		}
-		
-	}
+    public function get_by_id($id)
+    {
+        $this->_main_query();
+        if(is_array($id)){
+            $this->sqlsrv->where_in(''.$this->table.'.no_registrasi',$id);
+            $query = $this->sqlsrv->get();
+            return $query->result();
+        }else{
+            $this->sqlsrv->where(''.$this->table.'.no_registrasi',$id);
+            $query = $this->sqlsrv->get();
+            //echo '<pre>';print_r($this->sqlsrv->last_query());die;
+            return $query->row();
+        }
+        
+    }
 
-	/*get kasir data*/
-	public function getKasirData($no_registrasi)
-	{
-		$this->sqlsrv->from('tc_trans_kasir');
-		$this->sqlsrv->where('no_registrasi', $no_registrasi);
-		$this->sqlsrv->where('no_registrasi', $no_registrasi);
-		return $this->sqlsrv->get()->result();
-	}
+    /*get kasir data*/
+    public function getKasirData($no_registrasi)
+    {
+        $this->sqlsrv->from('tc_trans_kasir');
+        $this->sqlsrv->where('no_registrasi', $no_registrasi);
+        $this->sqlsrv->where('no_registrasi', $no_registrasi);
+        return $this->sqlsrv->get()->result();
+    }
 
-	/*Check existing data*/
-	public function checkExistingData($no_registrasi)
-	{
-		$this->db->from('csm_reg_pasien');
-		$this->db->where('no_registrasi', $no_registrasi);
-		return $this->db->get()->num_rows();
-	}
+    /*Check existing data*/
+    public function checkExistingData($no_registrasi)
+    {
+        $this->db->from('csm_reg_pasien');
+        $this->db->where('no_registrasi', $no_registrasi);
+        return $this->db->get()->num_rows();
+    }
 
-	/*get all billing data pasien*/
-	public function getBillingDataLocal($no_registrasi, $tipe='')
-	{
-		/*get reg pasien*/
-		$data = array();
-		$data['reg_data'] = $this->getRegDataLocal($no_registrasi);
-		$data['billing'] = $this->getBillingLocal($no_registrasi);
+    /*get all billing data pasien*/
+    public function getBillingDataLocal($no_registrasi, $tipe='')
+    {
+        /*get reg pasien*/
+        $data = array();
+        $data['reg_data'] = $this->getRegDataLocal($no_registrasi);
+        $data['billing'] = $this->getBillingLocal($no_registrasi);
         if( $tipe=='RJ' ){
             $data['resume'] = $this->db->get_where('csm_resume_billing_pasien', array('no_registrasi' => $no_registrasi))->row();
         }else{
-		    $data['resume'] = $this->db->get_where('csm_resume_billing_pasien_ri', array('no_registrasi' => $no_registrasi))->row();
+            $data['resume'] = $this->db->get_where('csm_resume_billing_pasien_ri', array('no_registrasi' => $no_registrasi))->row();
         }
-		return $data;
-	}
+        return $data;
+    }
 
     public function getRegDataLocal($no_registrasi){
         return $this->db->get_where('csm_reg_pasien', array('no_registrasi' => $no_registrasi))->row();
@@ -168,8 +168,8 @@ class Csm_billing_pasien_model extends CI_Model {
         return $this->db->get_where('csm_billing_pasien', array('no_registrasi' => $no_registrasi))->result();
     }
 
-	/*get detail data*/
-	public function getDetailData($no_registrasi){
+    /*get detail data*/
+    public function getDetailData($no_registrasi){
         /*get data registrasi*/
         $reg_data = $this->get_by_id($no_registrasi);
         /*get kasir data*/
@@ -187,16 +187,16 @@ class Csm_billing_pasien_model extends CI_Model {
     }
 
     public function insertDataFirstTime($sirs_data, $no_registrasi){
-    	/*transaction begin*/
-    	$this->db->trans_begin();
+        /*transaction begin*/
+        $this->db->trans_begin();
         //print_r($sirs_data);die;
         $kode_bag = ($sirs_data->reg_data->kode_bagian_keluar!=null)?$sirs_data->reg_data->kode_bagian_keluar:$sirs_data->reg_data->kode_bagian_masuk;
         /*get tipe RI/RJ*/
         $str_type = $this->getTipeRegistrasi($kode_bag);
 
-    	/*$str_kode_bag = substr((string)$sirs_data->reg_data->kode_bagian_masuk, 0,2);
+        /*$str_kode_bag = substr((string)$sirs_data->reg_data->kode_bagian_masuk, 0,2);
         $str_type = ($str_kode_bag=='01')?'RJ':'RI';*/
-    	/*data registrasi*/
+        /*data registrasi*/
             $data_registrasi = array(
                 'no_registrasi' => $sirs_data->reg_data->no_registrasi,
                 'csm_rp_no_sep' => $sirs_data->reg_data->no_sep,
@@ -210,6 +210,7 @@ class Csm_billing_pasien_model extends CI_Model {
                 'csm_rp_bagian' => $sirs_data->reg_data->nama_bagian,
                 'csm_rp_tipe' => $str_type,
                 'csm_rp_status' => 0,
+                'created_by' => $this->session->userdata('user')->fullname,
             );
            $this->db->insert('csm_reg_pasien', $data_registrasi);
 
@@ -363,228 +364,237 @@ class Csm_billing_pasien_model extends CI_Model {
     }
 
     public function resumeBillingRI($data){
-    	//print_r($data);die;
-    	/*subtotal*/
-    	$subtotal = (double)$data->bill_rs + (double)$data->bill_dr1 + (double)$data->bill_dr2 + (double)$data->lain_lain;
-    	/*kode str tarif*/
-    	$str_type = substr((string)$data->kode_bagian, 0,2);
-    	/*fields billing*/
-    	$fields = $this->fields;
+        //print_r($data);die;
+        /*subtotal*/
+        $subtotal = (double)$data->bill_rs + (double)$data->bill_dr1 + (double)$data->bill_dr2 + (double)$data->lain_lain;
+        /*kode str tarif*/
+        $str_type = substr((string)$data->kode_bagian, 0,2);
+        /*fields billing*/
+        $fields = $this->fields;
 
         /*kamar perawatan / ruangan / ICU*/
-    	if (in_array($data->jenis_tindakan, array(1))) {
-    		if (strpos($data->nama_tindakan, 'Ruangan') !== false) {
-			    if (strpos($data->nama_tindakan, 'Ruangan ICU') !== false) {
-			    	$bill['bill_kamar_icu'] = $subtotal;
-			    	$kode_trans_pelayanan['bill_kamar_icu'] = $data->kode_trans_pelayanan;
-				}else{
-					$bill['bill_kamar_perawatan'] = $subtotal;
-					$kode_trans_pelayanan['bill_kamar_perawatan'] = $data->kode_trans_pelayanan;
-				}
-			}
+        if (in_array($data->jenis_tindakan, array(1))) {
+            if (strpos($data->nama_tindakan, 'Ruangan') !== false) {
+                if (strpos($data->nama_tindakan, 'Ruangan ICU') !== false) {
+                    $bill['bill_kamar_icu'] = $subtotal;
+                    $kode_trans_pelayanan['bill_kamar_icu'] = $data->kode_trans_pelayanan;
+                }else{
+                    $bill['bill_kamar_perawatan'] = $subtotal;
+                    $kode_trans_pelayanan['bill_kamar_perawatan'] = $data->kode_trans_pelayanan;
+                }
+            }
         }
         /*tindakan inap*/
         if ( in_array($data->jenis_tindakan, array(3)) ) {
-        	if( $str_type=='03'){
-        		if(!in_array($data->kode_bagian, array('030501','030901'))){
-        			$bill['bill_tindakan_inap'] = $subtotal;
-        			$kode_trans_pelayanan['bill_tindakan_inap'] = $data->kode_trans_pelayanan;
-        		}
-        	}elseif(strpos($data->nama_tindakan, 'Hemodialisis') !== false){
-                $bill['bill_tindakan_hd'] = $subtotal;
-                $kode_trans_pelayanan['bill_tindakan_hd'] = $data->kode_trans_pelayanan;
+            if( $str_type=='03'){
+                if(!in_array($data->kode_bagian, array('030501','030901'))){
+                    $bill['bill_tindakan_inap'] = $subtotal;
+                    $kode_trans_pelayanan['bill_tindakan_inap'] = $data->kode_trans_pelayanan;
+                }
+            }elseif( $str_type == '01'){
+                if(strpos($data->nama_tindakan, 'Hemodialis') !== false){
+                    $bill['bill_tindakan_hd'] = $subtotal;
+                    $kode_trans_pelayanan['bill_tindakan_hd'] = $data->kode_trans_pelayanan;
+                }else{
+                    $bill['bill_klinik'] = $subtotal;
+                    $kode_trans_pelayanan['bill_klinik'] = $data->kode_trans_pelayanan;
+                }
+                
             }
         }
         /*tindakan oksigen*/
         if ( in_array($data->jenis_tindakan, array(7)) ) {
-        	if( $str_type=='03' ){
-        		if(!in_array($data->kode_bagian, array('030501','030901'))){
-        			$bill['bill_tindakan_oksigen'] = $subtotal;
-        			$kode_trans_pelayanan['bill_tindakan_oksigen'] = $data->kode_trans_pelayanan;
-        		}
-        	}
+            if( $str_type=='03' ){
+                if(!in_array($data->kode_bagian, array('030501','030901'))){
+                    $bill['bill_tindakan_oksigen'] = $subtotal;
+                    $kode_trans_pelayanan['bill_tindakan_oksigen'] = $data->kode_trans_pelayanan;
+                }
+            }
         }
         /*tindakan bedah*/
         if ( in_array($data->kode_bagian, array('030901')) ) {
-        	$bill['bill_tindakan_bedah'] = $subtotal;
-        	$kode_trans_pelayanan['bill_tindakan_bedah'] = $data->kode_trans_pelayanan;
+            $bill['bill_tindakan_bedah'] = $subtotal;
+            $kode_trans_pelayanan['bill_tindakan_bedah'] = $data->kode_trans_pelayanan;
         }
+
         /*tindakan vk*/
         if ( in_array($data->kode_bagian, array('030501')) ) {
-        	$bill['bill_tindakan_vk'] = $subtotal;
-        	$kode_trans_pelayanan['bill_tindakan_vk'] = $data->kode_trans_pelayanan;
+            $bill['bill_tindakan_vk'] = $subtotal;
+            $kode_trans_pelayanan['bill_tindakan_vk'] = $data->kode_trans_pelayanan;
         }
+
         /*obat/alkes*/
-        if ( in_array($data->jenis_tindakan, array(9)) ) {
-        	if( $str_type=='03' ){
-        		$bill['bill_obat'] = $subtotal;
-        		$kode_trans_pelayanan['bill_obat'] = $data->kode_trans_pelayanan;
-        	}else{
-                $bill['bill_ugd'] = $subtotal;
-                $kode_trans_pelayanan['bill_ugd'] = $data->kode_trans_pelayanan;
+        if ( !in_array($data->kode_bagian, array('030901')) ) {
+            if ( in_array($data->jenis_tindakan, array(9)) ) {
+                if( $str_type=='03' ){
+                    $bill['bill_obat'] = $subtotal;
+                    $kode_trans_pelayanan['bill_obat'] = $data->kode_trans_pelayanan;
+                }else{
+                    $bill['bill_ugd'] = $subtotal;
+                    $kode_trans_pelayanan['bill_ugd'] = $data->kode_trans_pelayanan;
+                }
             }
         }
+        
+
         /*ambulance*/
         if ( in_array($data->jenis_tindakan, array(6)) ) {
-    		$bill['bill_ambulance'] = $subtotal;
-    		$kode_trans_pelayanan['bill_ambulance'] = $data->kode_trans_pelayanan;
+            $bill['bill_ambulance'] = $subtotal;
+            $kode_trans_pelayanan['bill_ambulance'] = $data->kode_trans_pelayanan;
         }
 
         /*jasa dokter/bidan*/
         if ( in_array($data->jenis_tindakan, array(4,12)) ) {
-        	if( $str_type=='03' ){
-        		$bill['bill_dokter'] = $subtotal;
-        		$kode_trans_pelayanan['bill_dokter'] = $data->kode_trans_pelayanan;
-        	}
+            if( $str_type=='03' ){
+                $bill['bill_dokter'] = $subtotal;
+                $kode_trans_pelayanan['bill_dokter'] = $data->kode_trans_pelayanan;
+            }
         }
         /*biaya apotik*/
         if ( in_array($data->jenis_tindakan, array(11)) ) {
-        	if( $str_type=='06' ){
-        		$bill['bill_apotik'] = $subtotal;
-        		$kode_trans_pelayanan['bill_apotik'] = $data->kode_trans_pelayanan;
-        	}
+            if( $str_type=='06' ){
+                $bill['bill_apotik'] = $subtotal;
+                $kode_trans_pelayanan['bill_apotik'] = $data->kode_trans_pelayanan;
+            }
         }
-        /*biaya klinik*/
-        if( $str_type=='01' ){
-    		$bill['bill_klinik'] = $subtotal;
-    		$kode_trans_pelayanan['bill_klinik'] = $data->kode_trans_pelayanan;
-    	}
 
         /*biaya lain-lain*/
         if ( in_array($data->jenis_tindakan, array(8)) ) {
-        	$bill['bill_lain_lain'] = $subtotal;
-        	$kode_trans_pelayanan['bill_lain_lain'] = $data->kode_trans_pelayanan;
+            $bill['bill_lain_lain'] = $subtotal;
+            $kode_trans_pelayanan['bill_lain_lain'] = $data->kode_trans_pelayanan;
         }
 
         /*biaya pemakaian alat*/
         if ( in_array($data->jenis_tindakan, array(5)) ) {
-        	$bill['bill_pemakaian_alat'] = $subtotal;
-        	$kode_trans_pelayanan['bill_pemakaian_alat'] = $data->kode_trans_pelayanan;
+            $bill['bill_pemakaian_alat'] = $subtotal;
+            $kode_trans_pelayanan['bill_pemakaian_alat'] = $data->kode_trans_pelayanan;
         }
 
         /*biaya administrasi*/
         if ( in_array($data->jenis_tindakan, array(2)) ) {
-        	$bill['bill_adm'] = $subtotal;
-        	$kode_trans_pelayanan['bill_adm'] = $data->kode_trans_pelayanan;
+            $bill['bill_adm'] = $subtotal;
+            $kode_trans_pelayanan['bill_adm'] = $data->kode_trans_pelayanan;
         }
 
         /*biaya ugd*/
         if ( in_array($data->kode_bagian, array('020101')) ) {
-        	$bill['bill_ugd'] = $subtotal;
-        	$kode_trans_pelayanan['bill_ugd'] = $data->kode_trans_pelayanan;
+            $bill['bill_ugd'] = $subtotal;
+            $kode_trans_pelayanan['bill_ugd'] = $data->kode_trans_pelayanan;
         }
 
         /*penunjang medis*/
         /*biaya lab*/
         if ( in_array($data->kode_bagian, array('050101')) ) {
-        	$bill['bill_lab'] = $subtotal;
-        	$kode_trans_pelayanan['bill_lab'] = $data->kode_trans_pelayanan;
+            $bill['bill_lab'] = $subtotal;
+            $kode_trans_pelayanan['bill_lab'] = $data->kode_trans_pelayanan;
         }
         /*biaya radiologi*/
         if ( in_array($data->kode_bagian, array('050201')) ) {
-        	$bill['bill_rad'] = $subtotal;
-        	$kode_trans_pelayanan['bill_rad'] = $data->kode_trans_pelayanan;
+            $bill['bill_rad'] = $subtotal;
+            $kode_trans_pelayanan['bill_rad'] = $data->kode_trans_pelayanan;
         }
         /*biaya fisio*/
         if ( in_array($data->kode_bagian, array('050301')) ) {
-        	$bill['bill_fisio'] = $subtotal;
-        	$kode_trans_pelayanan['bill_fisio'] = $data->kode_trans_pelayanan;
+            $bill['bill_fisio'] = $subtotal;
+            $kode_trans_pelayanan['bill_fisio'] = $data->kode_trans_pelayanan;
         }
+
+
         /*return bill data by fields billing*/
         foreach ($fields as $key => $value) {
-        	$getData[$value] = isset($bill[$value])?$bill[$value]:0;
-        	$getKodeTrans[$value] = isset($kode_trans_pelayanan[$value])?$kode_trans_pelayanan[$value]:0;
+            $getData[$value] = isset($bill[$value])?$bill[$value]:0;
+            $getKodeTrans[$value] = isset($kode_trans_pelayanan[$value])?$kode_trans_pelayanan[$value]:0;
         }
         $array = array(
-        	'billing' => $getData,
-        	'kode_trans_pelayanan' => $getKodeTrans,
-        	);
+            'billing' => $getData,
+            'kode_trans_pelayanan' => $getKodeTrans,
+            );
         return $array;
     }
 
     public function splitResumeBillingRI($arrays){
-    	$sumArray = [];
-    	foreach ($arrays as $k=>$subArray) {
-		  foreach ($subArray['billing'] as $keys=>$value) {
-		    $sumArray[$keys][] = $value;
-		  }
-		}
-		foreach ($sumArray as $ky=>$vl) {
-			$getData[$ky] = array_sum($vl);
-		}
-		
-		foreach($getData as $kys=>$vls){
-			$data[] = array('title' => $this->getTitleNameBilling($kys), 'subtotal' => $vls, 'field' => $kys);
-		}
+        $sumArray = [];
+        foreach ($arrays as $k=>$subArray) {
+          foreach ($subArray['billing'] as $keys=>$value) {
+            $sumArray[$keys][] = $value;
+          }
+        }
+        foreach ($sumArray as $ky=>$vl) {
+            $getData[$ky] = array_sum($vl);
+        }
+        
+        foreach($getData as $kys=>$vls){
+            $data[] = array('title' => $this->getTitleNameBilling($kys), 'subtotal' => $vls, 'field' => $kys);
+        }
         return $data;
     }
 
     public function getTitleNameBilling($field){
-    	
-    	switch ($field) {
-    		case 'bill_kamar_perawatan':
-    			$title_name = 'Kamar Perawatan';
-    			break;
-    		case 'bill_kamar_icu':
-    			$title_name = 'Ruangan ICU';
-    			break;
-    		case 'bill_tindakan_inap':
-    			$title_name = 'Tindakan Rawat Inap';
-    			break;
-    		case 'bill_tindakan_oksigen':
-    			$title_name = 'Tindakan Oksigen';
-    			break;
-    		case 'bill_tindakan_bedah':
-    			$title_name = 'Tindakan Bedah';
-    			break;
-    		case 'bill_tindakan_vk':
-    			$title_name = 'Tindakan VK';
-    			break;
-    		case 'bill_obat':
-    			$title_name = 'Biaya Obat/Alkes';
-    			break;
-    		case 'bill_ambulance':
-    			$title_name = 'Sewa Ambulance';
-    			break;
-    		case 'bill_dokter':
-    			$title_name = 'Jasa Dokter/Bidan';
-    			break;
-    		case 'bill_apotik':
-    			$title_name = 'Biaya Apotik';
-    			break;
-    		case 'bill_lain_lain':
-    			$title_name = 'Lain-lain';
-    			break;
-    		case 'bill_adm':
-    			$title_name = 'Administrasi';
-    			break;
-    		case 'bill_ugd':
-    			$title_name = 'Gawat Darurat';
-    			break;
-    		case 'bill_rad':
-    			$title_name = 'Radiologi';
-    			break;
-    		case 'bill_lab':
-    			$title_name = 'Laboratorium';
-    			break;
-    		case 'bill_fisio':
-    			$title_name = 'Fisioterapi';
-    			break;
-    		case 'bill_klinik':
-    			$title_name = 'Poliklinik';
-    			break;
-    		case 'bill_pemakaian_alat':
-    			$title_name = 'Pemakaian Alat';
-    			break;
+        
+        switch ($field) {
+            case 'bill_kamar_perawatan':
+                $title_name = 'Kamar Perawatan';
+                break;
+            case 'bill_kamar_icu':
+                $title_name = 'Ruangan ICU';
+                break;
+            case 'bill_tindakan_inap':
+                $title_name = 'Tindakan Rawat Inap';
+                break;
+            case 'bill_tindakan_oksigen':
+                $title_name = 'Tindakan Oksigen';
+                break;
+            case 'bill_tindakan_bedah':
+                $title_name = 'Tindakan Bedah';
+                break;
+            case 'bill_tindakan_vk':
+                $title_name = 'Tindakan VK';
+                break;
+            case 'bill_obat':
+                $title_name = 'Biaya Obat/Alkes';
+                break;
+            case 'bill_ambulance':
+                $title_name = 'Sewa Ambulance';
+                break;
+            case 'bill_dokter':
+                $title_name = 'Jasa Dokter/Bidan';
+                break;
+            case 'bill_apotik':
+                $title_name = 'Biaya Apotik';
+                break;
+            case 'bill_lain_lain':
+                $title_name = 'Lain-lain';
+                break;
+            case 'bill_adm':
+                $title_name = 'Administrasi';
+                break;
+            case 'bill_ugd':
+                $title_name = 'Gawat Darurat';
+                break;
+            case 'bill_rad':
+                $title_name = 'Radiologi';
+                break;
+            case 'bill_lab':
+                $title_name = 'Laboratorium';
+                break;
+            case 'bill_fisio':
+                $title_name = 'Fisioterapi';
+                break;
+            case 'bill_klinik':
+                $title_name = 'Poliklinik';
+                break;
+            case 'bill_pemakaian_alat':
+                $title_name = 'Pemakaian Alat';
+                break;
             case 'bill_tindakan_hd':
                 $title_name = 'Hemodialisa';
                 break;
-    		default:
-    		$title_name = '';
-    			break;
+            default:
+            $title_name = '';
+                break;
 
-    	}
-    	return $title_name;
+        }
+        return $title_name;
     }
 
     public function splitResumeBilling($arrays){
@@ -609,7 +619,7 @@ class Csm_billing_pasien_model extends CI_Model {
     }
 
     public function getDetailBillingRJ($no_registrasi, $tipe, $data){
-    	/*html data untuk tampilan*/
+        /*html data untuk tampilan*/
         $html = '';
         if( count($data->group) > 0 ) :
 
@@ -680,25 +690,25 @@ class Csm_billing_pasien_model extends CI_Model {
         $html .= '</div>';
 
         $html .= '<div class="col-sm-5">';
-	        $html .= '<div><h4>Resume Pasien</h4></div>';
-		        $html .= '<table class="table table-striped">';  
-		        $html .= '<tr>';
-		            $html .= '<th width="30px">No</th>';
+            $html .= '<div><h4>Resume Pasien</h4></div>';
+                $html .= '<table class="table table-striped">';  
+                $html .= '<tr>';
+                    $html .= '<th width="30px">No</th>';
                     $html .= '<th width="100px">Kode</th>';
-		            $html .= '<th>Deskripsi Resume</th>';
-		            $html .= '<th>Jenis</th>';
-		        $html .= '</tr>';
-		        /*Billing RS*/
-		        foreach ($data->kasir_data as $key_kasir_data => $val_kasir_data) {
-		            $no=1;
-		            $html .= '<tr>';
+                    $html .= '<th>Deskripsi Resume</th>';
+                    $html .= '<th>Jenis</th>';
+                $html .= '</tr>';
+                /*Billing RS*/
+                foreach ($data->kasir_data as $key_kasir_data => $val_kasir_data) {
+                    $no=1;
+                    $html .= '<tr>';
                     $html .= '<td>'.$no.'</td>';
-		            $html .= '<td>'.$val_kasir_data->seri_kuitansi.'-'.$val_kasir_data->kode_tc_trans_kasir.'</td>';
-		            $html .= '<td><a href="'.base_url().'Templates/Export_data/export?type=pdf&flag=RJ&noreg='.$no_registrasi.'" target="_blank" >Billing Pasien Rawat Jalan</a></td>';
-		            $html .= '<td>Billing</td>';
-		            $html .= '</tr>';
-		            $no++;
-		        }
+                    $html .= '<td>'.$val_kasir_data->seri_kuitansi.'-'.$val_kasir_data->kode_tc_trans_kasir.'</td>';
+                    $html .= '<td><a href="'.base_url().'Templates/Export_data/export?type=pdf&flag=RJ&noreg='.$no_registrasi.'" target="_blank" >Billing Pasien Rawat Jalan</a></td>';
+                    $html .= '<td>Billing</td>';
+                    $html .= '</tr>';
+                    $no++;
+                }
         $cont_no = $no;
         /*Hasil penunjang medis*/
         /*grouping document pm*/
@@ -746,14 +756,14 @@ class Csm_billing_pasien_model extends CI_Model {
     }
 
     public function getDetailBillingRI($no_registrasi, $tipe, $data){
-    	/*html data untuk tampilan*/
-    	$dataRI = $this->getDataRI($no_registrasi);
+        /*html data untuk tampilan*/
+        $dataRI = $this->getDataRI($no_registrasi);
         //print_r($dataRI);die;
-    	$no=1;
+        $no=1;
         //print_r($data->group);die;
         foreach ($data->group as $k => $val) {
             foreach ($val as $value_data) {
-            	$subtotal = (double)$value_data->bill_rs + (double)$value_data->bill_dr1 + (double)$value_data->bill_dr2 + (double)$value_data->lain_lain;
+                $subtotal = (double)$value_data->bill_rs + (double)$value_data->bill_dr1 + (double)$value_data->bill_dr2 + (double)$value_data->lain_lain;
                 $resume_billing[] = $this->Csm_billing_pasien->resumeBillingRI($value_data);
             }        
         }
@@ -849,27 +859,27 @@ class Csm_billing_pasien_model extends CI_Model {
         $html .= '</tr>'; 
         $no=1;
         foreach ($split_billing as $k => $val) {
-        	/*total*/
-        	if((int)$val['subtotal'] > 0){
-        		$sum_subtotal[] = $val['subtotal'];
-	            $html .= '<tr>';
-	            $html .= '<td width="30px" class="center">'.$no.'</td>';
-	            $html .= '<td width="100px"><a href="#" onclick="getBillingDetail('.$no_registrasi.','."'".$tipe."'".','."'".$val['field']."'".')">'.$val['title'].'</a></td>';
-	            $html .= '<td width="100px" align="right">'.number_format($val['subtotal']).'</td>';
-	            $html .= '</tr>';
-	            $no++;
-        	}
+            /*total*/
+            if((int)$val['subtotal'] > 0){
+                $sum_subtotal[] = $val['subtotal'];
+                $html .= '<tr>';
+                $html .= '<td width="30px" class="center">'.$no.'</td>';
+                $html .= '<td width="100px"><a href="#" onclick="getBillingDetail('.$no_registrasi.','."'".$tipe."'".','."'".$val['field']."'".')">'.$val['title'].'</a></td>';
+                $html .= '<td width="100px" align="right">'.number_format($val['subtotal']).'</td>';
+                $html .= '</tr>';
+                $no++;
+            }
                  
         }
-	        /*biaya materai*/
-	         $html .= '<tr>';
-		            $html .= '<td width="30px" class="center">'.$no.'</td>';
-		            $html .= '<td width="100px">Materai</td>';
-		            $html .= '<td width="100px" align="right">6,000,-</td>';
-		            $html .= '</tr>';
-	        $html .= '<tr>';
-		    /*total plus materai*/
-		    $total_plus_materai = array_sum($sum_subtotal) + 6000;
+            /*biaya materai*/
+             $html .= '<tr>';
+                    $html .= '<td width="30px" class="center">'.$no.'</td>';
+                    $html .= '<td width="100px">Materai</td>';
+                    $html .= '<td width="100px" align="right">6,000,-</td>';
+                    $html .= '</tr>';
+            $html .= '<tr>';
+            /*total plus materai*/
+            $total_plus_materai = array_sum($sum_subtotal) + 6000;
             $html .= '<td align="right"><b>Total</b></td>';
             $html .= '<td colspan="2" width="100px" align="right"><b>Rp. '.number_format($total_plus_materai).',-</b></td>';
         $html .= '</tr>';   
@@ -879,8 +889,8 @@ class Csm_billing_pasien_model extends CI_Model {
         $html .= '</div>';
 
         $html .= '<div class="col-sm-8">';
-        	$html .= '<div id="'.$no_registrasi.'">';
-	        $html .= '</div>';
+            $html .= '<div id="'.$no_registrasi.'">';
+            $html .= '</div>';
         $html .= '</div>';
         else :
             $html .= '<div class="center"><p style="color:red;font-weight:bold"><b>PASIEN BELUM DIPROSES OLEH ADM PASIEN</b></p></div>';
@@ -891,45 +901,45 @@ class Csm_billing_pasien_model extends CI_Model {
 
 
     function SumObjectValue($object, $fields){
-    	//print_r($object);die;
-    	$sum = 0;
-    	foreach($object as $key=>$value){ 
-			$sum += $value->$fields;
-		}
+        //print_r($object);die;
+        $sum = 0;
+        foreach($object as $key=>$value){ 
+            $sum += $value->$fields;
+        }
 
-		return $sum;
+        return $sum;
     }
 
     public function getDataRI($no_registrasi){
-    	$this->sqlsrv->from('ri_tc_rawatinap');
-    	$this->sqlsrv->join('mt_ruangan','mt_ruangan.kode_ruangan=ri_tc_rawatinap.kode_ruangan','left');
-    	$this->sqlsrv->join('mt_klas','mt_klas.kode_klas=ri_tc_rawatinap.kelas_pas','left');
-    	$this->sqlsrv->join('mt_bagian','mt_bagian.kode_bagian=mt_ruangan.kode_bagian','left');
-    	$this->sqlsrv->where("ri_tc_rawatinap.no_kunjungan IN (SELECT no_kunjungan FROM tc_kunjungan WHERE no_registrasi = ".$no_registrasi." and kode_bagian_tujuan like '03%' and kode_bagian_tujuan != '030001')");
+        $this->sqlsrv->from('ri_tc_rawatinap');
+        $this->sqlsrv->join('mt_ruangan','mt_ruangan.kode_ruangan=ri_tc_rawatinap.kode_ruangan','left');
+        $this->sqlsrv->join('mt_klas','mt_klas.kode_klas=ri_tc_rawatinap.kelas_pas','left');
+        $this->sqlsrv->join('mt_bagian','mt_bagian.kode_bagian=mt_ruangan.kode_bagian','left');
+        $this->sqlsrv->where("ri_tc_rawatinap.no_kunjungan IN (SELECT no_kunjungan FROM tc_kunjungan WHERE no_registrasi = ".$no_registrasi." and kode_bagian_tujuan like '03%' and kode_bagian_tujuan != '030001')");
         
-    	return $this->sqlsrv->get()->row();
+        return $this->sqlsrv->get()->row();
     }
 
     public function getKodeTransPelayanan($array, $field){
-    	foreach ($array as $value_data) {
+        foreach ($array as $value_data) {
             $resume_billing[] = $this->Csm_billing_pasien->resumeBillingRI($value_data);
         }  
         foreach ($resume_billing as $key => $value) {
-        	$getData[] = $value['kode_trans_pelayanan'];
+            $getData[] = $value['kode_trans_pelayanan'];
         }
-    	return $getData;
+        return $getData;
     }
 
     public function arraySearchResume($array, $field){
-    	$filtered = array();
-		foreach($array as $index => $columns) {
-		    foreach($columns as $key => $value) {
-		        if ($key == $field && $value != 0) {
-		            $filtered[] = $value;
-		        }
-		    }
-		}
-		return $filtered;
+        $filtered = array();
+        foreach($array as $index => $columns) {
+            foreach($columns as $key => $value) {
+                if ($key == $field && $value != 0) {
+                    $filtered[] = $value;
+                }
+            }
+        }
+        return $filtered;
     }
 
     public function getHasilLab($params, $kode_penunjang){
