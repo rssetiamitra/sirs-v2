@@ -90,7 +90,7 @@ class Templates extends MX_Controller {
                     </tr> 
                     <tr>
                     	<td width="100px">Tanggal</td>
-                    	<td align="left" width="200px">: '.$this->tanggal->formatDateTime($data->reg_data->tgl_jam_masuk).'</td>
+                    	<td align="left" width="200px">: '.$this->tanggal->formatDate($data->reg_data->tgl_jam_masuk).'</td>
                     </tr>
                     <tr>
                     	<td width="100px">No. RM</td>
@@ -162,7 +162,7 @@ class Templates extends MX_Controller {
             $html .= '<th coslpan="2" align="center"><hr></th>';
             $html .= '<th coslpan="2" align="center"><hr></th>';
         $html .= '</tr>'; 
-
+        $sum_subtotal = array();
         $no=1;
         foreach ($data->group as $k => $val) {
             $html .= '<tr>';
@@ -170,6 +170,7 @@ class Templates extends MX_Controller {
             $html .= '<td align="right"></td>';
             $html .= '</tr>';
             $no++; 
+
             foreach ($val as $value_data) {
                 $subtotal = (double)$value_data->bill_rs + (double)$value_data->bill_dr1 + (double)$value_data->bill_dr2 + (double)$value_data->lain_lain;
                 $html .= '<tr>';
@@ -505,13 +506,13 @@ class Templates extends MX_Controller {
         return $html;
     }   
 
-    public function setGlobalFooterBilling(){
+    public function setGlobalFooterBilling($data){
         $html = '';
         $html .= '<table width="100%" border="1" cellspacing="0" cellpadding="0" border="0">
                     <tr> 
                         <td align="right" width="300px">
                         <br><br>
-                        Jakarta,&nbsp;'.$this->tanggal->formatDate(date('Y-m-d')).'<br>
+                        Jakarta,&nbsp;'.$this->tanggal->formatDate($data->reg_data->tgl_jam_masuk).'<br>
                         Rumah Sakit Setia Mitra
                         <br/><br/><br/><br/> 
                         <br/> 

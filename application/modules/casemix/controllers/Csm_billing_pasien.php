@@ -46,7 +46,7 @@ class Csm_billing_pasien extends MX_Controller {
         $view_name = ($tipe=='RJ')?'form_edit':'form_edit_ri';
         $title_name = ($tipe=='RJ')?'Rawat Jalan':'Rawat Inap';
         $data['form_type'] = $tipe;
-        $data['value'] = $this->Csm_billing_pasien->get_by_id($no_registrasi);
+        $data['value'] = $this->Csm_billing_pasien->get_by_id($no_registrasi); 
         $data['title'] = 'Billing Pasien '.$title_name.'';
         $data['breadcrumbs'] = $this->breadcrumbs->show();
         
@@ -128,9 +128,9 @@ class Csm_billing_pasien extends MX_Controller {
                 $newId = $no_registrasi;
                 $this->logs->save('csm_reg_pasien', $newId, 'update record', json_encode($dataexc));
             }
-
             $this->db->update('csm_reg_pasien', array('is_submitted' => 'Y') , array('no_registrasi' => $no_registrasi));
-
+            /*update to sirs*/
+            $this->Csm_billing_pasien->updateSirs($no_registrasi, $dataexc);
             
             $type = $this->input->post('form_type');
             /*created document name*/
@@ -183,7 +183,6 @@ class Csm_billing_pasien extends MX_Controller {
                 ));
             }
 
-
             if ($this->db->trans_status() === FALSE)
             {
                 $this->db->trans_rollback();
@@ -192,7 +191,7 @@ class Csm_billing_pasien extends MX_Controller {
             else
             {
                 $this->db->trans_commit();
-                echo json_encode(array('status' => 200, 'message' => 'Proses Berhasil Dilakukan'));
+                echo json_encode(array('status' => 200, 'message' => 'Proses Berhasil Dilakukan', 'redirect' => base_url().'casemix/Csm_billing_pasien/mergePDFFiles/'.$no_registrasi.'/'.$type.''));
             }
         }
     }
@@ -298,7 +297,7 @@ class Csm_billing_pasien extends MX_Controller {
                 $html .= $temp->setGlobalHeaderTemplate();
                 $html .= $temp->setGlobalProfilePasienTemplate($data);
                 $html .= $temp->setGlobalContentBilling($temp->TemplateBillingRJ($no_registrasi, $flag, $data));
-                $html .= $temp->setGlobalFooterBilling();
+                $html .= $temp->setGlobalFooterBilling($data);
                 break;
             case 'RI':
                 $html .= $temp->setGlobalHeaderTemplate();

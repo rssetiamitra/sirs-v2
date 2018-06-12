@@ -121,7 +121,7 @@ class Csm_dokumen_klaim extends MX_Controller {
                         <td width="150px">'.$value->csm_rp_nama_pasien.'</td>
                         <td width="150px">'.$value->tgl_transaksi_kasir.'</td>
                         <td width="70px" align="center">'.$value->csm_dk_tipe.'</td>
-                        <td width="70px" align="right">'.$value->csm_dk_total_klaim.'</td>
+                        <td width="70px" align="right">'.number_format($value->csm_dk_total_klaim).'</td>
                       </tr>';
                       $arr_subtotal[] = $value->csm_dk_total_klaim;
                       $tot_pasien_ri[] = ($value->csm_dk_tipe=='RI')?1:0;
@@ -131,7 +131,7 @@ class Csm_dokumen_klaim extends MX_Controller {
         }
         $html .= '<tr>  
                         <td colspan="6" align="center"></td>
-                        <td width="70px" align="right">'.array_sum($arr_subtotal).'</td>
+                        <td width="70px" align="right">'.number_format(array_sum($arr_subtotal)).'</td>
                       </tr>';
 
         $html .= '</tbody>
@@ -149,12 +149,12 @@ class Csm_dokumen_klaim extends MX_Controller {
                       <tr>  
                         <td colspan="3">Pasien Rawat Inap (RI)</td>
                         <td>'.array_sum($tot_pasien_ri).'</td>
-                        <td>'.array_sum($tot_pasien_ri_bill).'</td>
+                        <td>'.number_format(array_sum($tot_pasien_ri_bill)).'</td>
                       </tr>
                       <tr>  
                         <td colspan="3">Pasien Rawat Jalan (RJ)</td>
                         <td>'.array_sum($tot_pasien_rj).'</td>
-                        <td>'.array_sum($tot_pasien_rj_bill).'</td>
+                        <td>'.number_format(array_sum($tot_pasien_rj_bill)).'</td>
                       </tr>
 
                 <tbody>';

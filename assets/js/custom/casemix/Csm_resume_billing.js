@@ -5,11 +5,11 @@ $(document).ready(function() {
           
       "processing": true, //Feature control the processing indicator.
       "serverSide": true, //Feature control DataTables' server-side processing mode.
-      "scrollX": false,
-      "scrollY": false,
+      /*"scrollX": false,
+      "scrollY": false,*/
       "ordering": false,
-      "bPaginate": false,
-      "info": false,
+      "bPaginate": true,
+      "info": true,
       // Load data for the table's content from an Ajax source
       "ajax": {
           "url": "casemix/Csm_resume_billing/get_data",

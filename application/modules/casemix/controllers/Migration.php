@@ -12,7 +12,7 @@ class Migration extends MX_Controller {
         $this->breadcrumbs->push('Index', 'casemix/Migration');
         /*session redirect login if not login*/
         if($this->session->userdata('logged')!=TRUE){
-            //redirect(base_url().'login');exit;
+            redirect(base_url().'login');exit;
         }
         /*load model*/
         $this->load->model('Migration_model', 'Migration');
@@ -33,40 +33,6 @@ class Migration extends MX_Controller {
         );
         /*load view index*/
         $this->load->view('Migration/index', $data);
-    }
-
-    public function migrate(){
-        /*get data from sirs*/
-        //$get_data = $this->Migration->getDataLastMonth(date('m'));
-        /*get content from files*/
-        $get_data_fr_files = file_get_contents(base_url().'doc/dat.txt');
-        
-        /*loop data*/
-        foreach (json_decode($get_data_fr_files) as $key => $value) {
-            if( $value->no_sep != NULL || $value->no_sep != '' || !empty($value->no_sep)  ){
-                /*recursive file*/
-                $this->recursive($value->no_registrasi);
-            }
-        }
-    }
-
-    public function recursive($no_registrasi){
-        
-         /*get data trans pelayanan by no registrasi from sirs*/
-        $sirs_data = json_decode($this->Migration->getDetailData($no_registrasi));
-
-        /*cek apakah data sudah pernah diinsert ke database lokal atau blm*/
-        if( $this->Migration->checkExistingData($no_registrasi) ){
-            /*no action if data exist, continue to view data*/
-        }else{
-        /*jika data belum ada atau belum pernah diinsert, maka insert ke table*/
-            /*insert data untuk pertama kali*/
-            if( $sirs_data->group && $sirs_data->kasir_data && $sirs_data->trans_data )
-            $this->Migration->insertDataFirstTime($sirs_data, $no_registrasi);
-        }
-        
-        return true;
-
     }
 
     public function get_data()
@@ -118,17 +84,17 @@ class Migration extends MX_Controller {
                 
                 $row[] = ($status_reg->num_rows() > 0)?'<div class="center"><i class="fa fa-check bigger-200 green"></i></div>':'';
                 $row[] = '<div class="center"><a href="#" class="btn btn-xs btn-primary" onclick="submit('.$row_list->no_registrasi.')"><i class="ace-icon fa fa-saves bigger-50"></i>Submit</a></div>';
+
                 if ( $status_reg->num_rows() > 0 ) {
-                    $row[] = '<div class="center"><a href="'.base_url().'casemix/Csm_billing_pasien/mergePDFFiles/'.$row_list->no_registrasi.'/'.$str_type.'" target="_blank" class="btn btn-xs btn-danger"><i class="ace-icon fa fa-pdf-file bigger-50"></i>Merge</a></div>';
+                    $row[] = '<div class="center" id="merge_'.$row_list->no_registrasi.'""><a href="'.base_url().'casemix/Csm_billing_pasien/mergePDFFiles/'.$row_list->no_registrasi.'/'.$str_type.'" target="_blank" class="btn btn-xs btn-danger"><i class="ace-icon fa fa-pdf-file bigger-50"></i>Merge</a></div>';
                 }else{
-                    $row[] = '<div class="center" style="color:red">Waiting..</div>';
+                    $row[] = '<div class="center" style="color:red" id="merge_'.$row_list->no_registrasi.'"">Waiting..</div>';
                 }
                 
                        
                 $data[] = $row;
             }
-        
-
+            
         $output = array(
                         "draw" => $_POST['draw'],
                         "recordsTotal" => $this->Migration->count_all(),
@@ -142,6 +108,7 @@ class Migration extends MX_Controller {
 
     public function process()
     {
+
         $this->load->library('form_validation');
         $val = $this->form_validation;
         $val->set_rules('no_sep', 'No.SEP', 'trim|required');
@@ -161,16 +128,16 @@ class Migration extends MX_Controller {
             $no_registrasi = ($this->input->post('no_registrasi'))?$this->regex->_genRegex($this->input->post('no_registrasi'),'RGXINT'):0;
 
             /*get data trans pelayanan by no registrasi from sirs*/
-            $sirs_data = json_decode($this->Migration->getDetailData($no_registrasi));
-            //print_r($sirs_data);die;
+            $sirs_data = json_decode($this->Csm_billing_pasien->getDetailData($no_registrasi));
+            //echo '<pre>';print_r($sirs_data);die;
             /*cek apakah data sudah pernah diinsert ke database atau blm*/
-            if( $this->Migration->checkExistingData($no_registrasi) ){
+            if( $this->Csm_billing_pasien->checkExistingData($no_registrasi) ){
                 /*no action if data exist, continue to view data*/
             }else{
             /*jika data belum ada atau belum pernah diinsert, maka insert ke table*/
                 /*insert data untuk pertama kali*/
                 if( $sirs_data->group && $sirs_data->kasir_data && $sirs_data->trans_data )
-                $this->Migration->insertDataFirstTime($sirs_data, $no_registrasi);
+                $this->Csm_billing_pasien->insertDataFirstTime($sirs_data, $no_registrasi);
             }
 
             if( $this->input->post('no_sep') ){
@@ -187,8 +154,9 @@ class Migration extends MX_Controller {
             }
             
             $type = $this->input->post('form_type');
+            $this->db->delete('csm_dokumen_export', array('no_registrasi' => $no_registrasi));
             /*created document name*/
-            $createDocument = $this->Migration->createDocument($no_registrasi, $type);
+            $createDocument = $this->Csm_billing_pasien->createDocument($no_registrasi, $type);
             //print_r($createDocument);die;
             foreach ($createDocument as $k_cd => $v_cd) {
                 # code...
@@ -214,7 +182,7 @@ class Migration extends MX_Controller {
                 $doc_save['created_date'] = date('Y-m-d H:i:s');
                 $doc_save['created_by'] = $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL');
                 /*check if exist*/
-                if ( $this->Migration->checkIfDokExist($exp_no_registrasi, $filename) == FALSE ) {
+                if ( $this->Csm_billing_pasien->checkIfDokExist($exp_no_registrasi, $filename) == FALSE ) {
                     $this->db->insert('csm_dokumen_export', $doc_save);
                 }
                 endif;
@@ -229,7 +197,7 @@ class Migration extends MX_Controller {
             else
             {
                 $this->db->trans_commit();
-                echo json_encode(array('status' => 200, 'message' => 'Proses Berhasil Dilakukan'));
+                echo json_encode(array('status' => 200, 'message' => 'Proses Berhasil Dilakukan', 'redirect' => 'casemix/Csm_billing_pasien/mergePDFFiles/'.$no_registrasi.'/'.$type.''));
             }
         }
     }
@@ -244,24 +212,25 @@ class Migration extends MX_Controller {
         $view_name = ($tipe=='RJ')?'form_edit':'form_edit_ri';
         $title_name = ($tipe=='RJ')?'Rawat Jalan':'Rawat Inap';
         $data['form_type'] = $tipe;
-        $data['value'] = $this->Migration->get_by_id($no_registrasi);
+        $data['value'] = $this->Csm_billing_pasien->get_by_id($no_registrasi);
         $data['title'] = 'Migration '.$title_name.'';
         $data['breadcrumbs'] = $this->breadcrumbs->show();
-        
+        //echo '<pre>';print_r($data);die;
         /*get data trans pelayanan by no registrasi from sirs*/
-        $sirs_data = json_decode($this->Migration->getDetailData($no_registrasi));
-        //print_r($sirs_data);die;
+        $sirs_data = json_decode($this->Csm_billing_pasien->getDetailData($no_registrasi));
+        //echo '<pre>';print_r($sirs_data);die;
         /*cek apakah data sudah pernah diinsert ke database atau blm*/
-        if( $this->Migration->checkExistingData($no_registrasi) ){
+        if( $this->Csm_billing_pasien->checkExistingData($no_registrasi) ){
             /*no action if data exist, continue to view data*/
         }else{
         /*jika data belum ada atau belum pernah diinsert, maka insert ke table*/
             /*insert data untuk pertama kali*/
             if( $sirs_data->group && $sirs_data->kasir_data && $sirs_data->trans_data )
-            $this->Migration->insertDataFirstTime($sirs_data, $no_registrasi);
+            $this->Csm_billing_pasien->insertDataFirstTime($sirs_data, $no_registrasi);
         }
 
         $dataBilling = $this->getBillingLocal($no_registrasi, $tipe);
+       //echo '<pre>';print_r($dataBilling);die;
         $data['reg'] = (count($dataBilling['reg_data']) > 0) ? $dataBilling['reg_data'] : [] ;
 
         if( $tipe=='RJ' ){
@@ -273,7 +242,7 @@ class Migration extends MX_Controller {
             $data['group'] = $group;
             $data['resume'] = $dataBilling['resume'];
         }else{
-            $data['content_view'] = $this->Migration->getDetailBillingRI($no_registrasi, $tipe, $sirs_data);
+            $data['content_view'] = $this->Csm_billing_pasien->getDetailBillingRI($no_registrasi, $tipe, $sirs_data);
         }
         
         //echo '<pre>';print_r($data);die;
@@ -281,7 +250,7 @@ class Migration extends MX_Controller {
     }
 
     public function getBillingLocal($no_registrasi, $tipe){
-        return $this->Migration->getBillingDataLocal($no_registrasi, $tipe);
+        return $this->Csm_billing_pasien->getBillingDataLocal($no_registrasi, $tipe);
     }
 
     
@@ -327,8 +296,8 @@ class Migration extends MX_Controller {
         $temp = new Templates;
         /*header html*/
         /*get detail data billing*/
-        $data = json_decode($this->Migration->getDetailData($no_registrasi));
-        
+        $data = json_decode($this->Csm_billing_pasien->getDetailData($no_registrasi));
+        //echo '<pre>';print_r($data);die;
         $html = '';
 
         switch ($flag) {
@@ -336,7 +305,7 @@ class Migration extends MX_Controller {
                 $html .= $temp->setGlobalHeaderTemplate();
                 $html .= $temp->setGlobalProfilePasienTemplate($data);
                 $html .= $temp->setGlobalContentBilling($temp->TemplateBillingRJ($no_registrasi, $flag, $data));
-                $html .= $temp->setGlobalFooterBilling();
+                $html .= $temp->setGlobalFooterBilling($data);
                 break;
             case 'RI':
                 $html .= $temp->setGlobalHeaderTemplate();
@@ -388,7 +357,7 @@ class Migration extends MX_Controller {
 
       /*get content data*/
       $data = $this->getBillingLocal($no_registrasi, $flag); 
-
+      //echo '<pre>';print_r($data);die;
       /*get content html*/
       $html = json_decode( $this->getHtmlData($data, $no_registrasi, $flag, $pm) );
       
@@ -474,8 +443,8 @@ EOD;
     public function mergePDFFiles($no_registrasi, $tipe){
         /*get doc*/
 
-        $reg_data = $this->Migration->getRegDataLocal($no_registrasi);
-        $doc_pdf = $this->Migration->getDocumentPDF($no_registrasi);
+        $reg_data = $this->Csm_billing_pasien->getRegDataLocal($no_registrasi);
+        $doc_pdf = $this->Csm_billing_pasien->getDocumentPDF($no_registrasi);
         //echo '<pre>';print_r($doc_pdf);die;
         /*save merged file*/
         $datasaved = array(
@@ -484,7 +453,7 @@ EOD;
             'no_sep' => $reg_data->csm_rp_no_sep,
             'csm_dk_filename' => $reg_data->csm_rp_no_sep.'.pdf',
             'csm_dk_fullpath' => 'uploaded/casemix/merge-'.date('M-Y').'/'.$reg_data->csm_rp_no_sep.'.pdf',
-            'csm_dk_total_klaim' => $this->Migration->getTotalBilling($no_registrasi, $tipe),
+            'csm_dk_total_klaim' => $this->Csm_billing_pasien->getTotalBilling($no_registrasi, $tipe),
             'csm_dk_tipe' => $tipe,
             'created_date' => date('Y-m-d H:i:s'),
             'created_by' => $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL')

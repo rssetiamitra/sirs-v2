@@ -8,8 +8,8 @@ class Csm_billing_pasien_model extends CI_Model {
 	var $table = 'tc_registrasi';
 	var $column = array('tc_registrasi.no_registrasi','tc_registrasi.no_sep','tc_registrasi.kode_bagian_masuk', 'tc_registrasi.kode_bagian_keluar');
 	var $select = 'tc_registrasi.*, mt_master_pasien.nama_pasien, mt_master_pasien.jen_kelamin as jk, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai';
-	var $order = array('tc_registrasi.no_registrasi' => 'DESC');
-    var $fields = array('bill_kamar_perawatan','bill_kamar_icu','bill_tindakan_inap','bill_tindakan_oksigen','bill_tindakan_bedah','bill_tindakan_vk','bill_obat','bill_ambulance','bill_dokter','bill_apotik','bill_lain_lain','bill_adm','bill_ugd','bill_rad','bill_lab','bill_fisio','bill_klinik','bill_pemakaian_alat',
+	var $order = array('tc_registrasi.tgl_jam_masuk' => 'DESC', 'tc_registrasi.no_esp' => 'ASC');
+    var $fields = array('bill_kamar_perawatan','bill_kamar_icu','bill_tindakan_inap','bill_tindakan_oksigen','bill_tindakan_bedah','bill_tindakan_vk','bill_obat','bill_ambulance','bill_dokter','bill_apotik','bill_lain_lain','bill_adm','bill_ugd','bill_rad','bill_lab','bill_fisio','bill_klinik','bill_pemakaian_alat','bill_tindakan_hd'
             );
 	
 
@@ -105,7 +105,7 @@ class Csm_billing_pasien_model extends CI_Model {
 		$this->sqlsrv->join('mt_karyawan','mt_karyawan.kode_dokter=tc_trans_pelayanan.kode_dokter1','left');
 		$this->sqlsrv->where('no_registrasi', $no_registrasi);
         $this->sqlsrv->where('nama_tindakan IS NOT NULL');
-        $this->sqlsrv->where('tc_trans_pelayanan.kode_tc_trans_kasir IN (SELECT kode_tc_trans_kasir FROM tc_trans_kasir WHERE no_registrasi='.$no_registrasi.' and nk_perusahaan > 0)');
+        $this->sqlsrv->where('tc_trans_pelayanan.kode_tc_trans_kasir IN (SELECT kode_tc_trans_kasir FROM tc_trans_kasir WHERE no_registrasi='.$no_registrasi.' and kode_perusahaan = 120)');
 		$this->sqlsrv->where('tc_trans_pelayanan.status_nk', 1);
 		$this->sqlsrv->order_by('tc_trans_pelayanan.jenis_tindakan', 'ASC');
         //print_r($this->sqlsrv->last_query());die;
@@ -140,7 +140,7 @@ class Csm_billing_pasien_model extends CI_Model {
 	/*Check existing data*/
 	public function checkExistingData($no_registrasi)
 	{
-		$this->db->from('csm_billing_pasien');
+		$this->db->from('csm_reg_pasien');
 		$this->db->where('no_registrasi', $no_registrasi);
 		return $this->db->get()->num_rows();
 	}
@@ -214,6 +214,8 @@ class Csm_billing_pasien_model extends CI_Model {
            $this->db->insert('csm_reg_pasien', $data_registrasi);
 
             if( count($sirs_data->trans_data) > 0 ) :
+                /*delete first*/
+                $this->db->delete('csm_billing_pasien', array('no_registrasi' => $no_registrasi));
                 foreach ($sirs_data->trans_data as $key_trans_data => $val_trans_data) {
                     //if($val_trans_data->status_nk == 1){
                         /*data billing*/
@@ -243,8 +245,12 @@ class Csm_billing_pasien_model extends CI_Model {
                         }
                         //}
                 }
-                $this->db->insert_batch('Csm_billing_pasien', $data_billing);
+                
+                /*then insert*/
+                $this->db->insert_batch('csm_billing_pasien', $data_billing);
                 if( $str_type=='RJ' ){
+                    /*delete first*/
+                    $this->db->delete('csm_resume_billing_pasien', array('no_registrasi' => $no_registrasi));
                     /*split resume billing*/
                     $split_billing = $this->splitResumeBilling($resume_billing);
                     /*resume billing pasien*/
@@ -255,9 +261,14 @@ class Csm_billing_pasien_model extends CI_Model {
                         'csm_brp_bill_far' => $split_billing['bill_farm'],
                         'csm_brp_bill_pm' => $split_billing['bill_pm'],
                         'csm_brp_bill_tindakan' => $split_billing['bill_tindakan'],
+                        'csm_brp_bill_bpako' => $split_billing['bill_bpako'],
                         );
+                    
+                    /*then insert*/
                     $this->db->insert('csm_resume_billing_pasien', $data_resume_billing);
                 }else{
+                     /*delete first*/
+                    $this->db->delete('csm_resume_billing_pasien_ri', array('no_registrasi' => $no_registrasi));
                     /*split resume billing ri*/
                     $split_billing = $this->splitResumeBillingRI($resume_billing);
                     foreach ($split_billing as $ksb => $vsb) {
@@ -270,6 +281,8 @@ class Csm_billing_pasien_model extends CI_Model {
                             'created_by' => $this->session->userdata('user')->fullname,
                             );
                     }
+                   
+                    /*then insert*/
                     $this->db->insert_batch('csm_resume_billing_pasien_ri', $arr_sp);
                     //echo '<pre>';print_r($arr_sp);die;
 
@@ -311,6 +324,13 @@ class Csm_billing_pasien_model extends CI_Model {
             $bill_adm_rs = 0;
         }
 
+        /*BPAKO*/
+        if (in_array($jenis_tindakan, array(9))) {
+            $bill_bpako = $subtotal;
+        }else{
+            $bill_bpako = 0;
+        }
+
         /*penunjang medis*/
         $str_pm = substr((string)$kode_bagian, 0,2);
         if($str_pm == '05'){
@@ -336,6 +356,7 @@ class Csm_billing_pasien_model extends CI_Model {
             'bill_adm_rs' => $bill_adm_rs,
             'bill_pm' => $bill_pm,
             'bill_tindakan' => $bill_tindakan,
+            'bill_bpako' => $bill_bpako,
             );
 
         return $data;
@@ -369,7 +390,10 @@ class Csm_billing_pasien_model extends CI_Model {
         			$bill['bill_tindakan_inap'] = $subtotal;
         			$kode_trans_pelayanan['bill_tindakan_inap'] = $data->kode_trans_pelayanan;
         		}
-        	}
+        	}elseif(strpos($data->nama_tindakan, 'Hemodialisis') !== false){
+                $bill['bill_tindakan_hd'] = $subtotal;
+                $kode_trans_pelayanan['bill_tindakan_hd'] = $data->kode_trans_pelayanan;
+            }
         }
         /*tindakan oksigen*/
         if ( in_array($data->jenis_tindakan, array(7)) ) {
@@ -395,7 +419,10 @@ class Csm_billing_pasien_model extends CI_Model {
         	if( $str_type=='03' ){
         		$bill['bill_obat'] = $subtotal;
         		$kode_trans_pelayanan['bill_obat'] = $data->kode_trans_pelayanan;
-        	}
+        	}else{
+                $bill['bill_ugd'] = $subtotal;
+                $kode_trans_pelayanan['bill_ugd'] = $data->kode_trans_pelayanan;
+            }
         }
         /*ambulance*/
         if ( in_array($data->jenis_tindakan, array(6)) ) {
@@ -549,6 +576,9 @@ class Csm_billing_pasien_model extends CI_Model {
     		case 'bill_pemakaian_alat':
     			$title_name = 'Pemakaian Alat';
     			break;
+            case 'bill_tindakan_hd':
+                $title_name = 'Hemodialisa';
+                break;
     		default:
     		$title_name = '';
     			break;
@@ -564,6 +594,7 @@ class Csm_billing_pasien_model extends CI_Model {
             $bill_adm_rs[] = $value['bill_adm_rs'];
             $bill_pm[] = $value['bill_pm'];
             $bill_tindakan[] = $value['bill_tindakan'];
+            $bill_bpako[] = $value['bill_bpako'];
         }
         $data = array(
             'bill_dr' => array_sum($bill_dr),
@@ -571,6 +602,7 @@ class Csm_billing_pasien_model extends CI_Model {
             'bill_adm_rs' => array_sum($bill_adm_rs),
             'bill_pm' => array_sum($bill_pm),
             'bill_tindakan' => array_sum($bill_tindakan),
+            'bill_bpako' => array_sum($bill_bpako),
             );
 
         return $data;
@@ -582,7 +614,7 @@ class Csm_billing_pasien_model extends CI_Model {
         if( count($data->group) > 0 ) :
 
         $html .= '<b><h3>Rawat Jalan</h3></b>';
-        $html .= '<div class="col-sm-6">';
+        $html .= '<div class="col-sm-7">';
         $html .= '<div><h4>Billing Pasien</h4></div>';
         //print_r($data->group);die;
         $html .= '<table class="table table-striped">';
@@ -627,6 +659,7 @@ class Csm_billing_pasien_model extends CI_Model {
             $html .= '<th align="right">Obat/Farmasi</th>';
             $html .= '<th align="right">Penunjang Medis</th>';
             $html .= '<th align="right">Tindakan</th>';
+            $html .= '<th align="right">BPAKO</th>';
         $html .= '</tr>';
          /*split resume billing*/
         $split_billing = $this->splitResumeBilling($resume_billing);
@@ -636,16 +669,17 @@ class Csm_billing_pasien_model extends CI_Model {
             $html .= '<td align="right">Rp. '.number_format($split_billing['bill_farm']).',-</td>';
             $html .= '<td align="right">Rp. '.number_format($split_billing['bill_pm']).',-</td>';
             $html .= '<td align="right">Rp. '.number_format($split_billing['bill_tindakan']).',-</td>';
+            $html .= '<td align="right">Rp. '.number_format($split_billing['bill_bpako']).',-</td>';
         $html .= '</tr>'; 
         $html .= '<tr>';
-            $html .= '<td align="right" colspan="4"><b>Total</b></td>';
-            $total_billing = (double)$split_billing['bill_dr'] + (double)$split_billing['bill_adm_rs'] + (double)$split_billing['bill_farm'] + (double)$split_billing['bill_pm'] + (double)$split_billing['bill_tindakan']; 
+            $html .= '<td align="right" colspan="5"><b>Total</b></td>';
+            $total_billing = (double)$split_billing['bill_dr'] + (double)$split_billing['bill_adm_rs'] + (double)$split_billing['bill_farm'] + (double)$split_billing['bill_pm'] + (double)$split_billing['bill_tindakan']+ (double)$split_billing['bill_bpako']; 
             $html .= '<td align="right"><b>Rp. '.number_format($total_billing).',-</b></td>';
         $html .= '</tr>';
         $html .= '</table>'; 
         $html .= '</div>';
 
-        $html .= '<div class="col-sm-6">';
+        $html .= '<div class="col-sm-5">';
 	        $html .= '<div><h4>Resume Pasien</h4></div>';
 		        $html .= '<table class="table table-striped">';  
 		        $html .= '<tr>';
@@ -1017,6 +1051,16 @@ class Csm_billing_pasien_model extends CI_Model {
             $str_type = 'RI';
         }
         return $str_type;
+    }
+
+    public function updateSirs($key, $params){
+        $data = array(
+            'no_sep' => $params['csm_rp_no_sep'],
+            'tgl_jam_masuk' => $params['csm_rp_tgl_masuk'],
+            'tgl_jam_keluar' => $params['csm_rp_tgl_keluar'],
+            );
+        $this->sqlsrv->update('tc_registrasi', $data, array('no_registrasi' => $key));
+        return true;
     }
 
 }

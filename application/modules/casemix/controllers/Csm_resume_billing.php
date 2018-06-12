@@ -20,7 +20,6 @@ class Csm_resume_billing extends MX_Controller {
         /*enable profiler*/
         $this->output->enable_profiler(false);
 
-
     }
 
     public function index() { 
@@ -37,7 +36,6 @@ class Csm_resume_billing extends MX_Controller {
     public function get_data()
     {
         /*get data from model*/
-        //if(isset($_GET['num'])){
             $list = $this->Csm_resume_billing->get_datatables();
             $data = array();
             $no = $_POST['start'];
@@ -69,10 +67,6 @@ class Csm_resume_billing extends MX_Controller {
                        
                 $data[] = $row;
             }
-        /*}else{
-            $data = array();
-        }*/
-        
 
         $output = array(
                         "draw" => $_POST['draw'],

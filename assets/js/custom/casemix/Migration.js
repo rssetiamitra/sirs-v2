@@ -48,7 +48,7 @@ $(document).ready(function() {
             else {
                 /*data*/
                
-                $.getJSON("casemix/Migration/getDetail/" + no_registrasi + "/" + tipe, '', function (data) {
+                $.getJSON("casemix/Csm_billing_pasien/getDetail/" + no_registrasi + "/" + tipe, '', function (data) {
                     response_data = data;
                      // Open this row
                     row.child( format( response_data ) ).show();
@@ -324,12 +324,14 @@ function format ( data ) {
 }
 
 function reload_table(){
+
    oTable.ajax.reload(); //reload datatable ajax 
 }
   
 
 function submit(no_registrasi){
 
+    preventDefault();
     var sep = $('#'+no_registrasi).val();
     var type = $('#type_'+no_registrasi).val();
 
@@ -347,8 +349,11 @@ function submit(no_registrasi){
           var data=xhr.responseText;
           var jsonResponse = JSON.parse(data);
           if(jsonResponse.status === 200){
+            window.open(jsonResponse.redirect, '_blank');
+            $('#merge_'+no_registrasi).html('<a href="casemix/Csm_billing_pasien/mergePDFFiles/'+no_registrasi+'/'+type+'" target="_blank" class="btn btn-xs btn-danger"><i class="ace-icon fa fa-pdf-file bigger-50"></i>Merge</a>');
             $.achtung({message: jsonResponse.message, timeout:5});
-            reload_table();
+            /*open new tab*/
+            //reload_table();
           }else{
             $.achtung({message: jsonResponse.message, timeout:5});
           }
