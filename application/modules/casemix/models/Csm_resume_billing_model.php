@@ -5,9 +5,9 @@ class Csm_resume_billing_model extends CI_Model {
 
 
 	var $table = 'csm_resume_billing_pasien';
-	var $column = array('csm_resume_billing_pasien.no_registrasi');
+	var $column = array('csm_resume_billing_pasien.no_registrasi','csm_reg_pasien.csm_rp_no_sep','csm_reg_pasien.csm_rp_no_mr','csm_reg_pasien.csm_rp_nama_pasien');
 	var $select = 'csm_resume_billing_pasien.*, csm_reg_pasien.*';
-	var $order = array('csm_reg_pasien.csm_rp_no_sep' => 'DESC');
+	var $order = array('csm_reg_pasien.csm_rp_no_sep' => 'ASC', 'csm_reg_pasien.csm_rp_tgl_keluar' => 'ASC');
 	
 
 	public function __construct()
@@ -21,11 +21,12 @@ class Csm_resume_billing_model extends CI_Model {
 		$this->db->select($this->select);
 		$this->db->from($this->table);
 		$this->db->join('csm_reg_pasien', 'csm_reg_pasien.no_registrasi='.$this->table.'.no_registrasi', 'left');
-
+		$this->db->where('csm_reg_pasien.csm_rp_no_sep!=""', 'RJ');
 		if (isset($_GET['frmdt']) AND $_GET['frmdt'] != '' || isset($_GET['todt']) AND $_GET['todt'] != '') {
-			$this->db->where("csm_reg_pasien.csm_rp_tgl_masuk BETWEEN '".$_GET['frmdt']."' AND '".$_GET['todt']."' " );
+			$this->db->where("csm_reg_pasien.".$_GET['field']." BETWEEN '".$this->tanggal->selisih($_GET['frmdt'], '+0')."' AND '".$this->tanggal->selisih($_GET['todt'], '+0')."' " );
 		}
 		$this->db->where('csm_reg_pasien.csm_rp_tipe', 'RJ');
+		
 
 	}
 

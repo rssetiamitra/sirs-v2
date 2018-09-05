@@ -10641,10 +10641,12 @@ td,
 .table > thead > tr {
   color: #FFF;
   font-weight: normal;
-  background: #428bca;;
-  /*background-image: -webkit-linear-gradient(top, #f8f8f8 0%, #ececec 100%);
-  background-image: -o-linear-gradient(top, #f8f8f8 0%, #ececec 100%);
-  background-image: linear-gradient(to bottom, #f8f8f8 0%, #ececec 100%);*/
+  
+  /*background: rgb(31, 90, 118);*/
+  /*background: #428bca;*/
+  background-image: -webkit-linear-gradient(top, #428bca 0%, #ececec 100%);
+  background-image: -o-linear-gradient(top, #428bca 0%, #ececec 100%);
+  background-image: linear-gradient(to bottom, #076960 90%, #ddb909 20%);
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff8f8f8', endColorstr='#ffececec', GradientType=0);
 }
@@ -10922,7 +10924,9 @@ td .lbl:only-child {
   transform: scale(1.2);
 }
 .widget-body {
-  background-color: #FFF;
+  /*background-color: #FFF;*/
+  background-color: rgba(255, 255, 255, 0.15);
+  
 }
 .widget-main {
   padding: 12px;
@@ -12540,7 +12544,9 @@ td .lbl:only-child {
 }
 .login-layout .widget-box .widget-main {
   padding: 16px 36px 36px;
-  background: #F7F7F7;
+  /*background: #F7F7F7;*/
+  background: rgba(205, 203, 141, 0.62);
+
 }
 .login-layout .widget-box .widget-main form {
   margin: 0;
@@ -12557,7 +12563,8 @@ td .lbl:only-child {
   color: #CF7;
 }
 .login-box .toolbar {
-  background: #5090C1;
+  /*background: #5090C1;*/
+  background: #bc9d09;
   border-top: 2px solid #597597;
 }
 .login-box .toolbar > div {

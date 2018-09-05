@@ -350,12 +350,12 @@ counterfile++;
                 ?>
 
                 
-                <input name="no_registrasi_hidden" id="no_registrasi_hidden" value="<?php echo $reg->no_registrasi?>" class="form-control" type="hidden">
+                <input name="no_registrasi_hidden" id="no_registrasi_hidden" value="<?php echo $no_registrasi?>" class="form-control" type="hidden">
                 <input name="form_type" id="form_type" value="RJ" class="form-control" type="hidden">
 
                 <div class="form-actions center">
 
-                  <a onclick="getMenu('casemix/Csm_billing_pasien')" href="#" class="btn btn-sm btn-success">
+                  <a onclick="getMenu('casemix/Migration')" href="#" class="btn btn-sm btn-success">
                     <i class="ace-icon fa fa-arrow-left icon-on-right bigger-110"></i>
                     Kembali ke daftar
                   </a>

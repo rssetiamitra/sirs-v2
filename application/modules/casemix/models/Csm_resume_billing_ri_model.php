@@ -7,7 +7,7 @@ class Csm_resume_billing_ri_model extends CI_Model {
 	var $table = 'csm_reg_pasien';
 	var $column = array('csm_reg_pasien.no_registrasi');
 	var $select = 'csm_reg_pasien.*, csm_reg_pasien.*';
-	var $order = array('csm_reg_pasien.csm_rp_no_sep' => 'DESC');
+	var $order = array('csm_reg_pasien.csm_rp_no_sep' => 'ASC', 'csm_reg_pasien.csm_rp_tgl_keluar' => 'ASC');
 	
 
 	public function __construct()
@@ -22,7 +22,7 @@ class Csm_resume_billing_ri_model extends CI_Model {
 		$this->db->from($this->table);
 
 		if (isset($_GET['frmdt']) AND $_GET['frmdt'] != '' || isset($_GET['todt']) AND $_GET['todt'] != '') {
-			$this->db->where($this->table.".csm_rp_tgl_masuk BETWEEN '".$_GET['frmdt']."' AND '".$_GET['todt']."' " );
+			$this->db->where($this->table.".".$_GET['field']." BETWEEN '".$_GET['frmdt']."' AND '".$_GET['todt']."' " );
 		}
 		$this->db->where('csm_reg_pasien.csm_rp_tipe', 'RI');
 

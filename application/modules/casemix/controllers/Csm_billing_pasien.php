@@ -89,7 +89,7 @@ class Csm_billing_pasien extends MX_Controller {
     
     public function process()
     {
-        //print_r($_FILES);die;
+        print_r($_FILES);die;
 
         $this->load->library('form_validation');
         $val = $this->form_validation;

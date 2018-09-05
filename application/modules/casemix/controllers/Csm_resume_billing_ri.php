@@ -3,6 +3,8 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
+include_once (dirname(__FILE__) . "/Csm_billing_pasien.php");
+
 class Csm_resume_billing_ri extends MX_Controller {
 
     /*function constructor*/
@@ -16,6 +18,7 @@ class Csm_resume_billing_ri extends MX_Controller {
             redirect(base_url().'login');exit;
         }
         /*load model*/
+        $this->load->model('Csm_billing_pasien_model', 'Csm_billing_pasien');
         $this->load->model('Csm_resume_billing_ri_model', 'Csm_resume_billing_ri');
         /*enable profiler*/
         $this->output->enable_profiler(false);
@@ -41,6 +44,7 @@ class Csm_resume_billing_ri extends MX_Controller {
             $data = array();
             $no = $_POST['start'];
             foreach ($list as $row_list) {
+                $dataRI = $this->Csm_billing_pasien->getDataRI($row_list->no_registrasi);
                 $no++;
                 $row = array();
                 $link = 'casemix/Csm_billing_pasien';
@@ -56,16 +60,15 @@ class Csm_resume_billing_ri extends MX_Controller {
                 $row[] = $row_list->no_registrasi;
                 $row[] = $str_type;
                 $row[] = '';
-                $row[] = '<a href="#" onclick="getMenu('."'".$link.'/editBilling/'.$row_list->no_registrasi.''."/".$str_type."'".')">'.$row_list->no_registrasi.'</a>';
-                $row[] = '<div class="center">'.$row_list->csm_rp_no_sep.'</div>';
+                $row[] = '<a href="#" onclick="getMenu('."'".$link.'/editBilling/'.$row_list->no_registrasi.''."/".$str_type."'".')">'.$row_list->csm_rp_no_sep.'</a>';
                 $row[] = $row_list->csm_rp_no_mr;
                 $row[] = strtoupper($row_list->csm_rp_nama_pasien);
                 $row[] = '<i class="fa fa-angle-double-right green"></i> '.$this->tanggal->formatDate($row_list->csm_rp_tgl_masuk);
                 $row[] = '<i class="fa fa-angle-double-left red"></i> '.$this->tanggal->formatDate($row_list->csm_rp_tgl_keluar);
                 $row[] = $row_list->csm_rp_nama_dokter;
-                $row[] = $row_list->csm_rp_bagian;
+                $row[] = $dataRI->nama_bagian;
+                $row[] = $dataRI->nama_klas;
                 
-                $row[] = '<div class="center">'.$str_type.'</div>';
                 $row[] = '';
                        
                 $data[] = $row;
@@ -75,7 +78,7 @@ class Csm_resume_billing_ri extends MX_Controller {
         $output = array(
                         "draw" => $_POST['draw'],
                         "recordsTotal" => $this->Csm_resume_billing_ri->count_all(),
-                        //"recordsFiltered" => $this->Csm_resume_billing_ri->count_filtered(),
+                        "recordsFiltered" => $this->Csm_resume_billing_ri->count_filtered(),
                         "data" => $data,
                 );
         //print_r($output);die;

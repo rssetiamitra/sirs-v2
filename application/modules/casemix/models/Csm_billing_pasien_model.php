@@ -9,8 +9,8 @@ class Csm_billing_pasien_model extends CI_Model {
     var $column = array('tc_registrasi.no_registrasi','tc_registrasi.no_sep','tc_registrasi.kode_bagian_masuk', 'tc_registrasi.kode_bagian_keluar');
     var $select = 'tc_registrasi.*, mt_master_pasien.nama_pasien, mt_master_pasien.jen_kelamin as jk, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai';
     var $order = array('tc_registrasi.tgl_jam_masuk' => 'DESC', 'tc_registrasi.no_esp' => 'ASC');
-    var $fields = array('bill_kamar_perawatan','bill_kamar_icu','bill_tindakan_inap','bill_tindakan_oksigen','bill_tindakan_bedah','bill_tindakan_vk','bill_obat','bill_ambulance','bill_dokter','bill_apotik','bill_lain_lain','bill_adm','bill_ugd','bill_rad','bill_lab','bill_fisio','bill_klinik','bill_pemakaian_alat','bill_tindakan_hd'
-            );
+    var $fields = array('bill_kamar_perawatan', 'bill_kamar_icu', 'bill_tindakan_inap', 'bill_tindakan_oksigen', 'bill_tindakan_bedah', 'bill_tindakan_vk', 'bill_obat',
+        'bill_ambulance', 'bill_dokter', 'bill_apotik', 'bill_lain_lain', 'bill_adm', 'bill_ugd', 'bill_rad', 'bill_lab', 'bill_fisio', 'bill_klinik', 'bill_pemakaian_alat', 'bill_tindakan_hd','bill_tindakan_luar_rs');
     
 
     public function __construct()
@@ -98,11 +98,12 @@ class Csm_billing_pasien_model extends CI_Model {
 
     /*get data transaksi*/
     public function getTransData($no_registrasi){
-        $this->sqlsrv->select('tc_trans_pelayanan.*,mt_jenis_tindakan.jenis_tindakan as nama_jenis_tindakan, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai as nama_dokter');
+        $this->sqlsrv->select('tc_trans_pelayanan.*,mt_jenis_tindakan.jenis_tindakan as nama_jenis_tindakan, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai as nama_dokter, mt_klas.nama_klas');
         $this->sqlsrv->from('tc_trans_pelayanan');
         $this->sqlsrv->join('mt_jenis_tindakan','mt_jenis_tindakan.kode_jenis_tindakan=tc_trans_pelayanan.jenis_tindakan','left');
         $this->sqlsrv->join('mt_bagian','mt_bagian.kode_bagian=tc_trans_pelayanan.kode_bagian','left');
         $this->sqlsrv->join('mt_karyawan','mt_karyawan.kode_dokter=tc_trans_pelayanan.kode_dokter1','left');
+        $this->sqlsrv->join('mt_klas','mt_klas.kode_klas=tc_trans_pelayanan.kode_klas','left');
         $this->sqlsrv->where('no_registrasi', $no_registrasi);
         $this->sqlsrv->where('nama_tindakan IS NOT NULL');
         $this->sqlsrv->where('tc_trans_pelayanan.kode_tc_trans_kasir IN (SELECT kode_tc_trans_kasir FROM tc_trans_kasir WHERE no_registrasi='.$no_registrasi.' and kode_perusahaan = 120)');
@@ -110,6 +111,31 @@ class Csm_billing_pasien_model extends CI_Model {
         $this->sqlsrv->order_by('tc_trans_pelayanan.jenis_tindakan', 'ASC');
         //print_r($this->sqlsrv->last_query());die;
         return $this->sqlsrv->get()->result();
+    }
+
+    public function getOriginalTransData($no_registrasi){
+        $this->sqlsrv->select('tc_trans_pelayanan.*,mt_jenis_tindakan.jenis_tindakan as nama_jenis_tindakan, mt_bagian.nama_bagian, mt_karyawan.nama_pegawai as nama_dokter, mt_klas.nama_klas, kode_perusahaan, status_nk, kode_tc_trans_kasir');
+        $this->sqlsrv->from('tc_trans_pelayanan');
+        $this->sqlsrv->join('mt_jenis_tindakan','mt_jenis_tindakan.kode_jenis_tindakan=tc_trans_pelayanan.jenis_tindakan','left');
+        $this->sqlsrv->join('mt_bagian','mt_bagian.kode_bagian=tc_trans_pelayanan.kode_bagian','left');
+        $this->sqlsrv->join('mt_karyawan','mt_karyawan.kode_dokter=tc_trans_pelayanan.kode_dokter1','left');
+        $this->sqlsrv->join('mt_klas','mt_klas.kode_klas=tc_trans_pelayanan.kode_klas','left');
+        $this->sqlsrv->where('no_registrasi', $no_registrasi);
+        $this->sqlsrv->where('nama_tindakan IS NOT NULL');
+        //$this->sqlsrv->where('tc_trans_pelayanan.kode_tc_trans_kasir IN (SELECT kode_tc_trans_kasir FROM tc_trans_kasir WHERE no_registrasi='.$no_registrasi.'');
+        $this->sqlsrv->order_by('tc_trans_pelayanan.jenis_tindakan', 'ASC');
+        //print_r($this->sqlsrv->last_query());die;
+        $trans_data = $this->sqlsrv->get()->result();
+
+        $group = array();
+        foreach ($trans_data as $value) {
+            $group[$value->nama_jenis_tindakan][] = $value;
+        }
+
+        $result = json_encode(array('group' => $group, 'no_registrasi' => $no_registrasi, 'trans_data' => $trans_data));
+
+        return $result;
+
     }
 
     public function get_by_id($id)
@@ -132,7 +158,6 @@ class Csm_billing_pasien_model extends CI_Model {
     public function getKasirData($no_registrasi)
     {
         $this->sqlsrv->from('tc_trans_kasir');
-        $this->sqlsrv->where('no_registrasi', $no_registrasi);
         $this->sqlsrv->where('no_registrasi', $no_registrasi);
         return $this->sqlsrv->get()->result();
     }
@@ -210,6 +235,7 @@ class Csm_billing_pasien_model extends CI_Model {
                 'csm_rp_bagian' => $sirs_data->reg_data->nama_bagian,
                 'csm_rp_tipe' => $str_type,
                 'csm_rp_status' => 0,
+                'created_date' => date('Y-m-d H:i:s'),
                 'created_by' => $this->session->userdata('user')->fullname,
             );
            $this->db->insert('csm_reg_pasien', $data_registrasi);
@@ -344,7 +370,7 @@ class Csm_billing_pasien_model extends CI_Model {
         }else{
             $bill_pm = 0;
             /*tindakan*/
-            if (in_array($jenis_tindakan, array(3))) {
+            if (in_array($jenis_tindakan, array(3,10))) {
                 $bill_tindakan = $subtotal;
             }else{
                 $bill_tindakan = 0;
@@ -402,6 +428,7 @@ class Csm_billing_pasien_model extends CI_Model {
                 
             }
         }
+
         /*tindakan oksigen*/
         if ( in_array($data->jenis_tindakan, array(7)) ) {
             if( $str_type=='03' ){
@@ -464,6 +491,12 @@ class Csm_billing_pasien_model extends CI_Model {
             $kode_trans_pelayanan['bill_lain_lain'] = $data->kode_trans_pelayanan;
         }
 
+        /*biaya tindakan luar rs*/
+        if ( in_array($data->jenis_tindakan, array(10)) ) {
+            $bill['bill_tindakan_luar_rs'] = $subtotal;
+            $kode_trans_pelayanan['bill_tindakan_luar_rs'] = $data->kode_trans_pelayanan;
+        }
+
         /*biaya pemakaian alat*/
         if ( in_array($data->jenis_tindakan, array(5)) ) {
             $bill['bill_pemakaian_alat'] = $subtotal;
@@ -517,20 +550,26 @@ class Csm_billing_pasien_model extends CI_Model {
         foreach ($arrays as $k=>$subArray) {
           foreach ($subArray['billing'] as $keys=>$value) {
             $sumArray[$keys][] = $value;
+            if($subArray['kode_trans_pelayanan'][$keys]!=0){
+                $kodeTransPe[$keys][] = $subArray['kode_trans_pelayanan'][$keys];
+            }
           }
         }
         foreach ($sumArray as $ky=>$vl) {
             $getData[$ky] = array_sum($vl);
         }
-        
         foreach($getData as $kys=>$vls){
-            $data[] = array('title' => $this->getTitleNameBilling($kys), 'subtotal' => $vls, 'field' => $kys);
+            $count = isset($kodeTransPe[$kys])?count($kodeTransPe[$kys]):0;
+            $filter_count = ($count==1)?$kodeTransPe[$kys][0]:'';
+            $data[] = array('title' => $this->getTitleNameBilling($kys,$filter_count), 'subtotal' => $vls, 'field' => $kys);
         }
         return $data;
     }
 
-    public function getTitleNameBilling($field){
-        
+    public function getTitleNameBilling($field, $kode_trans_pelayanan=''){
+        if ( $kode_trans_pelayanan!='' ) {
+            $title_name_avr = $this->sqlsrv->get_where('tc_trans_pelayanan', array('kode_trans_pelayanan' => $kode_trans_pelayanan))->row()->nama_tindakan;
+        }
         switch ($field) {
             case 'bill_kamar_perawatan':
                 $title_name = 'Kamar Perawatan';
@@ -589,6 +628,9 @@ class Csm_billing_pasien_model extends CI_Model {
             case 'bill_tindakan_hd':
                 $title_name = 'Hemodialisa';
                 break;
+            case 'bill_tindakan_luar_rs':
+                $title_name = isset($title_name_avr)?$title_name_avr:'Tindakan Luar RS';
+                break;
             default:
             $title_name = '';
                 break;
@@ -620,6 +662,7 @@ class Csm_billing_pasien_model extends CI_Model {
 
     public function getDetailBillingRJ($no_registrasi, $tipe, $data){
         /*html data untuk tampilan*/
+        //print_r($data);
         $html = '';
         if( count($data->group) > 0 ) :
 
@@ -740,6 +783,13 @@ class Csm_billing_pasien_model extends CI_Model {
         }
 
         $html .= '</table>';
+        $html .= '<p class="center">';
+
+        $html .= '<b>Klik Tombol Dibawah Ini !</b><br><blink><i class="fa fa-angle-double-down bigger-300"></i></blink><br><br>';
+            $html .= '<a href="#" onclick="update_status_nk_kode_perusahaan('.$no_registrasi.')" class="btn btn-sm btn-primary">Update Status NK dan Kode Perusahaan</a>';
+            $html .= '<br><br> Silahkan klik tombol diatas jika terdapat item tindakan yang tidak muncul';
+            $html .= '</p>';
+
         /*$html .= '<br>';
         $link = 'casemix/Csm_billing_pasien';
         $html .= '<a href="#" onclick="getMenu('."'".$link.'/editBilling/'.$no_registrasi.''."/RJ'".')" class="btn btn-xs btn-success"><i class="fa fa-edit bigger-50"></i> Edit Billing</a> ';
@@ -749,8 +799,79 @@ class Csm_billing_pasien_model extends CI_Model {
         $html .= '<br>';
         $html .= '<br>';
         $html .= '<br>';
+
         else:
+            $trans_data_original = json_decode($this->getOriginalTransData($no_registrasi));
             $html .= '<div class="center"><br><p style="color:red;font-weight:bold"><b> PASIEN BELUM DIPULANGKAN DAN ATAU BELUM DISUBMIT KASIR</b></p></div>';
+            $html .= '<div class="col-md-12">';
+            $html .= '<table class="table table-striped">';
+            $html .= '<tr>';
+                $html .= '<th width="30px" class="center">No</th>';
+                $html .= '<th>Uraian</th>';
+                $html .= '<th width="100px" class="center">Submit Kasir</th>';
+                $html .= '<th width="120px" class="center">Status NK</th>';
+                $html .= '<th width="120px" class="center">Kode Perusahaan</th>';
+                $html .= '<th width="120px" class="right">Subtotal (Rp.)</th>';
+            $html .= '</tr>'; 
+            $no=1;
+            foreach ($trans_data_original->group as $k => $val) {
+                $html .= '<tr>';
+                $html .= '<td width="30px" class="center">'.$no.'</td>';
+                $html .= '<td width="100px" colspan="4"><b>'.$k.'</b></td>';
+                $html .= '<td width="100px" align="right"></td>';
+                $html .= '</tr>';
+                $no++; 
+                foreach ($val as $value_data) {
+                    $subtotal = (double)$value_data->bill_rs + (double)$value_data->bill_dr1 + (double)$value_data->bill_dr2 + (double)$value_data->lain_lain;
+                    $html .= '<tr>';
+                    $html .= '<td width="30px">&nbsp;</td>';
+                    $html .= '<td>'.$value_data->nama_tindakan.'</td>';
+                    $sign_submit_kasir = ($value_data->kode_tc_trans_kasir)?'<i class="fa fa-check-circle green"> </i>':'<span style="color:red"><i class="fa fa-times-circle red"></i></span>';
+                    $html .= '<td width="100px" class="center">'.$sign_submit_kasir.'</td>';
+                    $sign_status_nk = ($value_data->status_nk)?'<i class="fa fa-check-circle green"> </i>':'<span style="color:red"><i class="fa fa-times-circle red"></i></span>';
+                    $html .= '<td width="100px" class="center">'.$sign_status_nk.'</td>';
+                    $sign_penjamin = ($value_data->kode_perusahaan==120)?'<i class="fa fa-check-circle green"></i>':'<span style="color:red"><i class="fa fa-times-circle red"></i></span>';
+                    $html .= '<td width="100px" class="center">'.$sign_penjamin.'</td>';
+                    $html .= '<td width="100px" align="right">Rp. '.number_format($subtotal).',-</td>';
+                    $html .= '</tr>';
+                    /*total*/
+                    $sum_subtotal[] = $subtotal;
+                    /*resume billing*/
+                    $resume_billing[] = $this->Csm_billing_pasien->resumeBillingRJ($value_data->jenis_tindakan, $value_data->kode_bagian, $subtotal);
+                }        
+            }   
+            $html .= '</table>';
+            $html .= '</div>';
+            $html .= '<div class="col-md-9">';
+             $html .= '<table class="table table-striped">';
+            $html .= '<tr>';
+                $html .= '<th width="100px">&nbsp;</th>';
+                $html .= '<th>Submit Kasir</th>';
+                $html .= '<th>Status NK</th>';
+                $html .= '<th>Kode Perusahaan</th>';
+            $html .= '</tr>';
+            $html .= '<tr>';
+                $html .= '<td> <i class="fa fa-times-circle red"></i> Permasalahan</td>';
+                $html .= '<td>Kasir belum melakukan submit pada aplikasi SIRS Averin</td>';
+                $html .= '<td>Nota Kredit pasien tidak tercata disistem, karena masih ada kendala pada aplikasi</td>';
+                $html .= '<td>Pasien terdaftar bukan sebagai pasien BPJS karena kesalahan input pada petugas registrasi</td>';
+            $html .= '</tr>';
+            $html .= '<tr>';
+                $html .= '<td><i class="fa fa-check-circle green"></i> Solusi</td>';
+                $html .= '<td> Kasir harus melakukan submit terlebih dahulu sebelum melanjutkan ke proses Submit dan Merge PDF Files</td>';
+                $html .= '<td>Silahkan klik tombol disamping untuk mengupdate Status NK</td>';
+                $html .= '<td>Pasien harus diubah data penjaminnya pada aplikasi SIRS Averin atau Klik Button disamping</td>';
+            $html .= '</tr>';
+            $html .= '</table>';
+
+            $html .= '</div>';
+            $html .= '<div class="col-md-3 center">';
+            $html .= '<b>Silahkan Klik Tombol Dibawah Ini !</b><br><blink><i class="fa fa-angle-double-down bigger-300"></i></blink><br><br>';
+            $html .= '<a href="#" onclick="update_status_nk_kode_perusahaan('.$no_registrasi.')" class="btn btn-sm btn-primary">Update Status NK dan Kode Perusahaan</a>';
+            $html .= '';
+            $html .= '</div>';
+
+
         endif;
         return $html;
     }
@@ -894,6 +1015,13 @@ class Csm_billing_pasien_model extends CI_Model {
         $html .= '</div>';
         else :
             $html .= '<div class="center"><p style="color:red;font-weight:bold"><b>PASIEN BELUM DIPROSES OLEH ADM PASIEN</b></p></div>';
+            $html .= '<p class="center">';
+
+            $html .= '<b>Klik Tombol Dibawah Ini !</b><br><blink><i class="fa fa-angle-double-down bigger-300"></i></blink><br><br>';
+            $html .= '<a href="#" onclick="update_status_nk_kode_perusahaan('.$no_registrasi.')" class="btn btn-sm btn-primary">Update Status NK dan Kode Perusahaan</a>';
+            $html .= '<br><br> Silahkan klik tombol diatas jika terdapat item tindakan yang tidak muncul';
+            $html .= '</p>';
+
         endif;
 
         return $html;

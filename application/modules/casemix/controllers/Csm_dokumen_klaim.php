@@ -26,18 +26,27 @@ class Csm_dokumen_klaim extends MX_Controller {
     public function index() { 
         /*define variable data*/
         $data = array(
-            'title' => 'Resume Billing',
+            'title' => 'Dokumen Klaim',
             'breadcrumbs' => $this->breadcrumbs->show()
         );
         /*load view index*/
         $this->load->view('Csm_dokumen_klaim/index', $data);
     }
 
+    public function show_data() { 
+        /*define variable data*/
+        $data = array(
+            'title' => 'Dokumen Klaim',
+            'breadcrumbs' => $this->breadcrumbs->show()
+        );
+        /*load view index*/
+        $this->load->view('Csm_dokumen_klaim/index2', $data);
+    }
     
     public function get_data()
     {
         /*get data from model*/
-        //if(isset($_GET['num'])){
+        if(isset($_GET['search'])){
             $list = $this->Csm_dokumen_klaim->get_datatables();
             $data = array();
             $no = $_POST['start'];
@@ -59,21 +68,25 @@ class Csm_dokumen_klaim extends MX_Controller {
 
                 $row[] = '<div class="center">'.$row_list->csm_dk_tipe.'</div>';
                 $row[] = '<div align="right">'.number_format($row_list->csm_dk_total_klaim).'</div>';
-                
+                $row[] = $this->tanggal->formatDate($row_list->created_date).'<br>by : '.$row_list->created_by;
                 $data[] = $row;
             }
-        /*}else{
-            $data = array();
-        }*/
-        
-
-        $output = array(
+            $output = array(
                         "draw" => $_POST['draw'],
                         "recordsTotal" => $this->Csm_dokumen_klaim->count_all(),
                         "recordsFiltered" => $this->Csm_dokumen_klaim->count_filtered(),
                         "data" => $data,
                 );
-        //print_r($output);die;
+        }else{
+            $data = array();
+            $output = array(
+                        "draw" => $_POST['draw'],
+                        "recordsTotal" => 0,
+                        "recordsFiltered" => 0,
+                        "data" => $data,
+                );
+        }
+        
         //output to json format
         echo json_encode($output);
     }
@@ -82,7 +95,7 @@ class Csm_dokumen_klaim extends MX_Controller {
     {   
         $output = array(
                         "recordsTotal" => $this->Csm_dokumen_klaim->count_all(),
-                        //"recordsFiltered" => $this->registrasi_adm->count_filtered_data(),
+                        /*"recordsFiltered" => $this->Csm_dokumen_klaim->count_filtered(),*/
                         "data" => $_POST,
                 );
         echo json_encode($output);

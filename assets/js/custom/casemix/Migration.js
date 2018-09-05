@@ -260,24 +260,70 @@ $(document).ready(function() {
 
       $('#btn_search_data').click(function (e) {
           e.preventDefault();
-          $.ajax({
-          url: 'casemix/Migration/find_data',
-          type: "post",
-          data: $('#form_search').serialize(),
-          dataType: "json",
-          beforeSend: function() {
-            achtungShowLoader();  
-          },
-          success: function(data) {
-            achtungHideLoader();
-            find_data_reload(data);
+          if( $('#no_sep_mr').val()=='' ){
+            alert('Masukan No.SEP atau No.MR !'); return false;
           }
-        });
+          if( $('#from_tgl_reg').val()!='' ){
+            if($('#to_tgl_reg').val()==''){
+              alert('Masukan s/d Tanggal !'); return false;
+            }
+          }
+          searchAction();
       });
+
+      $( "#no_sep_mr" )
+          .keypress(function(event) {
+            var keycode =(event.keyCode?event.keyCode:event.which); 
+            if(keycode ==13){
+              event.preventDefault();
+              if($(this).valid()){
+                //$('#from_tgl_reg').focus();
+                searchAction();
+              }
+              return false;       
+            }
+      });
+
+      $( "#from_tgl_reg" )
+          .keypress(function(event) {
+            var keycode =(event.keyCode?event.keyCode:event.which); 
+            if(keycode ==13){
+              event.preventDefault();
+              if($(this).val()!=''){
+                if($('#to_tgl_reg').val()==''){
+                  $('#to_tgl_reg').focus();
+                  alert('Masukan s/d Tanggal !');  
+                }else{
+                  searchAction();
+                }
+              }else{
+                searchAction();
+              }
+              return false;       
+            }
+      });
+
+      $( "#to_tgl_reg" )
+          .keypress(function(event) {
+            var keycode =(event.keyCode?event.keyCode:event.which); 
+            if(keycode ==13){
+              if($(this).val()!=''){
+                if($('#from_tgl_reg').val()==''){
+                  $('#from_tgl_reg').focus();
+                  alert('Masukan Tanggal !');  
+                }else{
+                  searchAction();
+                }
+              }else{
+                searchAction();
+              }
+            }
+        });
 
       $('#btn_reset_data').click(function (e) {
             e.preventDefault();
-            reset_table();
+            $("#form_search")[0].reset();
+            //reset_table();
       });
 
       $("#button_delete").click(function(event){
@@ -296,6 +342,23 @@ $(document).ready(function() {
 
       
 });
+
+function searchAction(){
+  $.ajax({
+    url: 'casemix/Migration/find_data',
+    type: "post",
+    data: $('#form_search').serialize(),
+    dataType: "json",
+    beforeSend: function() {
+      achtungShowLoader();  
+    },
+    success: function(data) {
+      $("html, body").animate({ scrollTop: "100px" });
+      achtungHideLoader();
+      find_data_reload(data);
+    }
+  });
+}
 
 function preventDefault(e) {
   e = e || window.event;
@@ -351,6 +414,7 @@ function submit(no_registrasi){
           if(jsonResponse.status === 200){
             window.open(jsonResponse.redirect, '_blank');
             $('#merge_'+no_registrasi).html('<a href="casemix/Csm_billing_pasien/mergePDFFiles/'+no_registrasi+'/'+type+'" target="_blank" class="btn btn-xs btn-danger"><i class="ace-icon fa fa-pdf-file bigger-50"></i>Merge</a>');
+            $('#status_'+no_registrasi).html('<i class="fa fa-check bigger-200 green"></i><br><span style="font-size:10px">By : '+jsonResponse.created_by+'<br>'+jsonResponse.created_date+'</span>');
             $.achtung({message: jsonResponse.message, timeout:5});
             /*open new tab*/
             //reload_table();
@@ -364,6 +428,38 @@ function submit(no_registrasi){
 
   
 }
+
+function update_status_nk_kode_perusahaan(no_registrasi){
+
+    preventDefault();
+    $.ajax({
+        url: 'casemix/Migration/update_status_nk_kode_perusahaan',
+        type: "post",
+        data: {no_registrasi:no_registrasi},
+        dataType: "json",
+        beforeSend: function() {
+          achtungShowLoader();  
+        },
+        uploadProgress: function(event, position, total, percentComplete) {
+        },
+        complete: function(xhr) {     
+          var data=xhr.responseText;
+          var jsonResponse = JSON.parse(data);
+          if(jsonResponse.status === 200){
+            $.achtung({message: jsonResponse.message, timeout:5});
+            /*open new tab*/
+            reload_table();
+          }else{
+            $.achtung({message: jsonResponse.message, timeout:5});
+          }
+          achtungHideLoader();
+        }
+
+      });
+
+  
+}
+
 
 function getBillingDetail(noreg, type, field){
   preventDefault();

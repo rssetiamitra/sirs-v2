@@ -37,37 +37,22 @@ class Migration_model extends CI_Model {
 			$this->sqlsrv->or_where(''.$this->table.'.no_mr', $_GET['num']);
 		}
 
-        /*if(isset($_GET['tipe']) AND $_GET['tipe']!=''){
-            if( $_GET['tipe']=='all' ){
-            }elseif ( $_GET['tipe']=='RJ' ) {
-                $this->sqlsrv->where("kode_bagian_masuk LIKE '01%'");
-                $this->sqlsrv->or_where("kode_bagian_keluar LIKE '02%'");
-            }else{
-                $this->sqlsrv->where("kode_bagian_masuk NOT LIKE '01%'");
-                $this->sqlsrv->or_where("kode_bagian_keluar NOT LIKE '02%'");
-            }
-        }*/
+        
 
 		
         if (isset($_GET['frmdt']) AND $_GET['frmdt'] != '' || isset($_GET['todt']) AND $_GET['todt'] != '') {
             //$this->sqlsrv->where("tc_registrasi.tgl_jam_masuk BETWEEN '".$_GET['frmdt']."' AND '".$_GET['todt']."' " );
-            $this->sqlsrv->where("tc_registrasi.tgl_jam_masuk >= '".$_GET['frmdt']."'" );
-            $this->sqlsrv->where("tc_registrasi.tgl_jam_masuk <= '".$_GET['todt']."'" );
+            $this->sqlsrv->where("tc_registrasi.tgl_jam_masuk >= '".$this->tanggal->selisih($_GET['frmdt'],'-1')."'" );
+            $this->sqlsrv->where("tc_registrasi.tgl_jam_masuk <= '".$this->tanggal->selisih($_GET['todt'],'+1')."'" );
         }
+
+        
 
         $this->sqlsrv->where('YEAR(tgl_jam_masuk)>2016');
         //$this->sqlsrv->where('MONTH(tgl_jam_masuk) >= 4');
-        $this->sqlsrv->where(''.$this->table.'.kode_perusahaan', 120);
+        //$this->sqlsrv->where(''.$this->table.'.kode_perusahaan', 120);
 		//$this->sqlsrv->where(''.$this->table.'.tgl_jam_keluar IS NOT NULL');
 
-
-		/*if (isset($_GET['frmdt']) AND $_GET['frmdt'] != '' || isset($_GET['todt']) AND $_GET['todt'] != '') {
-			$this->sqlsrv->where($this->table.".tgl_jam_masuk BETWEEN '".$_GET['frmdt']."' AND '".$_GET['todt']."' " );
-		}*/
-
-		/*if (isset($_GET['todt']) AND $_GET['todt'] != '') {
-			$this->sqlsrv->where(''.$this->table.'.tgl_jam_keluar <= ',$_GET['todt'] );
-		}*/
 	}
 
 	private function _get_datatables_query()
@@ -99,9 +84,9 @@ class Migration_model extends CI_Model {
 	function get_datatables()
 	{
 		$this->_get_datatables_query();
-		if($_POST['length'] != -1)
-		$this->sqlsrv->limit($_POST['length'], $_POST['start']);
-		$query = $this->sqlsrv->get();
+        if($_POST['length'] != -1)
+        $this->sqlsrv->limit($_POST['length'], $_POST['start']);
+        $query = $this->sqlsrv->get();
 		//print_r($this->sqlsrv->last_query());die;
 		return $query->result();
 	}
@@ -1037,5 +1022,15 @@ class Migration_model extends CI_Model {
         }
         return $qry->total;
     }
+
+    public function update_status_nk_kode_perusahaan($no_registrasi){
+        /*update tc_registrasi*/
+        $this->sqlsrv->update('tc_registrasi', array('kode_perusahaan'=>120), array('no_registrasi'=>$no_registrasi));
+        $this->sqlsrv->update('tc_trans_pelayanan', array('kode_perusahaan'=>120, 'status_nk'=>1), array('no_registrasi'=>$no_registrasi));
+
+        $this->sqlsrv->query('update tc_trans_kasir set kode_perusahaan=120 where kode_tc_trans_kasir in (select kode_tc_trans_kasir from tc_trans_pelayanan where no_registrasi='.$no_registrasi.')');
+        return true;
+    }
+
 
 }

@@ -281,9 +281,42 @@ $(document).ready(function() {
           var month = $('#month').val();
           var year = $('#year').val();
           var tipe = $('#tipe').val();
-          window.open('Templates/export_data/exportContent?month='+month+'&year='+year+'&tipe='+tipe+'&type=excel&mod=Csm_dokumen_klaim','_blank');     
+          var from_tgl_reg = $('#from_tgl_reg').val();
+          var to_tgl_reg = $('#to_tgl_reg').val();
+          var field = $('input[name=search_by_field]:checked').val();
+          window.open('Templates/export_data/exportContent?month='+month+'&year='+year+'&tipe='+tipe+'&frmdt='+from_tgl_reg+'&todt='+to_tgl_reg+'&field='+field+'&type=excel&mod=Csm_dokumen_klaim','_blank');     
       });
 
+      $('input[name=search_data]').click(function(e){
+        var field = $('input[name=search_data]:checked').val();
+        if ( field == 'dokumen_klaim' ) {
+          /*load datatables menu klaim*/
+          $('#page-area-content').load('casemix/Csm_dokumen_klaim');
+        }else if (field == 'reg_not_merge') {
+          /*load data register not merge*/
+          $('#page-area-content').load('casemix/Csm_reg_not_merge');
+        }else{
+          /*default menu klaim*/
+          $('#page-area-content').load('casemix/Csm_dokumen_klaim');
+
+        }
+      });
+
+      $('input[name=search_by_field]').click(function(e){
+        var field = $('input[name=search_by_field]:checked').val();
+        if ( field == 'month_year' ) {
+          $('#month_year_field').show('fast');
+          $('#tanggal_field').hide('fast');
+        }else{
+          if (field=='created_date') {
+            $('#text_label').html('Tanggal Input/Costing');
+          }else {
+            $('#text_label').html('Tanggal Transaksi');
+          }
+          $('#month_year_field').hide('fast');
+          $('#tanggal_field').show('fast');
+        }
+      });
 
       $('#btn_reset_data').click(function (e) {
             e.preventDefault();
@@ -309,17 +342,16 @@ $(document).ready(function() {
 
 function reset_table(){
     oTable.ajax.url('casemix/Csm_dokumen_klaim/get_data').load();
-    $("html, body").animate({ scrollTop: "400px" });
+    $("html, body").animate({ scrollTop: "100px" });
 
 }
 
 function find_data_reload(result){
 
-    var data = result.data;    
-    oTable.ajax.url('casemix/Csm_dokumen_klaim/get_data?month='+data.month+'&year='+data.year+'&tipe='+data.tipe).load();
-    $("html, body").animate({ scrollTop: "400px" });
-    //$('#search_result_show').show();
-
+    var data = result.data;  
+    oTable.ajax.url('casemix/Csm_dokumen_klaim/get_data?month='+data.month+'&year='+data.year+'&tipe='+data.tipe+'&frmdt='+data.from_tgl_reg+'&todt='+data.to_tgl_reg+'&field='+data.search_by_field+'&search=excecute').load();
+    $("html, body").animate({ scrollTop: "100px" });
+    
 }
 
 function format ( data ) {

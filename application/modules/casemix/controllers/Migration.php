@@ -1,7 +1,7 @@
 <?php
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
-
+include_once (dirname(__FILE__) . "/Csm_billing_pasien.php");
 class Migration extends MX_Controller {
 
     /*function constructor*/
@@ -22,13 +22,13 @@ class Migration extends MX_Controller {
         $this->load->module('Templates/Export_data.php');
         /*enable profiler*/
         $this->output->enable_profiler(false);
-
+        $this->cbpModule = new Csm_billing_pasien;
     }
 
     public function index() { 
         /*define variable data*/
         $data = array(
-            'title' => 'Migration',
+            'title' => 'Costing',
             'breadcrumbs' => $this->breadcrumbs->show()
         );
         /*load view index*/
@@ -47,7 +47,8 @@ class Migration extends MX_Controller {
                 $kode_bag = ($row_list->kode_bagian_keluar!=null)?$row_list->kode_bagian_keluar:$row_list->kode_bagian_masuk;
                 /*get tipe RI/RJ*/
                 $str_type = $this->Csm_billing_pasien->getTipeRegistrasi($kode_bag);
-
+                $det_data = $this->Csm_billing_pasien->getDetailData($row_list->no_registrasi);
+                $decode_data = json_decode($det_data);
                 $no++;
                 $row = array();
                 $link = 'casemix/Migration';
@@ -84,14 +85,28 @@ class Migration extends MX_Controller {
                 
                 $row[] = '<div class="center"><input type="hidden" id="type_'.$row_list->no_registrasi.'" class="form-control" name="form_type['.$row_list->no_registrasi.']" value="'.$str_type.'">'.$str_type.'</div>';
                 
-                $row[] = ($status_reg->num_rows() > 0)?'<div class="center"><i class="fa fa-check bigger-200 green"></i><br><span style="font-size:11px">By : '.$reg_data->created_by.'</span></div>':'';
-                $row[] = '<div class="center"><a href="#" class="btn btn-xs btn-primary" onclick="submit('.$row_list->no_registrasi.')"><i class="ace-icon fa fa-saves bigger-50"></i>Submit</a></div>';
+                if( count($decode_data->group) > 0 ){
+                    $row[] = ($status_reg->num_rows() > 0)?'<div class="center" ><i class="fa fa-check bigger-200 green"></i><br><span style="font-size:10px">By : '.$reg_data->created_by.'<br>'.$this->tanggal->formatDateTime($reg_data->created_date).'</span></div>':'<div class="center" id="status_'.$row_list->no_registrasi.'""></div>';
+                }else{
+                    $row[] = '<div class="center" style="color:red;font-size:11px">Pasien Belum Disubmit Kasir</div>';
+                }
 
-                if ( $status_reg->num_rows() > 0 ) {
+                if($row_list->kode_perusahaan==120){
+                    if( count($decode_data->group) > 0 ){
+                        $row[] = '<div class="center"><a href="#" class="btn btn-xs btn-primary" onclick="submit('.$row_list->no_registrasi.')"><i class="fa fa-arrow-to-bottom bigger-50"></i> Submit</a></div>';
+                    }else{
+                        $row[] = '<div class="center" style="color:red;font-size:11px">Pasien Belum Disubmit Kasir</div>';
+                    }
+                     
+                }else{
+                    $row[] = '<div class="center" style="color:red;font-size:11px">Silahkan Ubah Data Penjamin Pasien</div>';
+                }
+
+                /*if ( $status_reg->num_rows() > 0 ) {
                     $row[] = '<div class="center" id="merge_'.$row_list->no_registrasi.'""><a href="'.base_url().'casemix/Csm_billing_pasien/mergePDFFiles/'.$row_list->no_registrasi.'/'.$str_type.'" target="_blank" class="btn btn-xs btn-danger"><i class="ace-icon fa fa-pdf-file bigger-50"></i>Merge</a></div>';
                 }else{
                     $row[] = '<div class="center" style="color:red" id="merge_'.$row_list->no_registrasi.'"">Waiting..</div>';
-                }
+                }*/
                        
                 $data[] = $row;
             }
@@ -152,8 +167,8 @@ class Migration extends MX_Controller {
             if( $this->input->post('no_sep') ){
                 /*csm_reg_pasien*/
                 $dataexc = array(
-                    'csm_rp_no_sep' => $this->regex->_genRegex($val->set_value('no_sep'), 'RGXQSL'),
-                    'is_submitted' => $this->regex->_genRegex('Y', 'RGXQSL'),
+                    'csm_rp_no_sep' => $this->regex->_genRegex(strtoupper($val->set_value('no_sep')), 'RGXQSL'),
+                    'is_submitted' => $this->regex->_genRegex('Y', 'RGXAZ'),
                 );
                 $dataexc['updated_date'] = date('Y-m-d H:i:s');
                 $dataexc['updated_by'] = $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL');
@@ -177,7 +192,8 @@ class Migration extends MX_Controller {
                 $unique_code = $explode[3];
 
                 /*create and save download file pdf*/
-                if( $this->getContentPDF($exp_no_registrasi, $named, $unique_code, 'F') ) :
+                //$cbpModule = new Csm_billing_pasien;
+                if( $this->cbpModule->getContentPDF($exp_no_registrasi, $named, $unique_code, 'F') ) :
                 /*save document to database*/
                 /*csm_reg_pasien*/
                 $filename = $named.'-'.$no_mr.$exp_no_registrasi.$unique_code.'.pdf';
@@ -206,7 +222,7 @@ class Migration extends MX_Controller {
             else
             {
                 $this->db->trans_commit();
-                echo json_encode(array('status' => 200, 'message' => 'Proses Berhasil Dilakukan', 'redirect' => 'casemix/Csm_billing_pasien/mergePDFFiles/'.$no_registrasi.'/'.$type.''));
+                echo json_encode(array('status' => 200, 'message' => 'Proses Berhasil Dilakukan', 'redirect' => 'casemix/Csm_billing_pasien/mergePDFFiles/'.$no_registrasi.'/'.$type.'', 'created_by' => $doc_save['created_by'], 'created_date' => $this->tanggal->formatDateTime($doc_save['created_date'])));
             }
         }
     }
@@ -220,9 +236,10 @@ class Migration extends MX_Controller {
         /*load form view*/
         $view_name = ($tipe=='RJ')?'form_edit':'form_edit_ri';
         $title_name = ($tipe=='RJ')?'Rawat Jalan':'Rawat Inap';
+        $data['no_registrasi'] = $no_registrasi;
         $data['form_type'] = $tipe;
         $data['value'] = $this->Csm_billing_pasien->get_by_id($no_registrasi);
-        $data['title'] = 'Migration '.$title_name.'';
+        $data['title'] = 'Costing '.$title_name.'';
         $data['breadcrumbs'] = $this->breadcrumbs->show();
         //echo '<pre>';print_r($data);die;
         /*get data trans pelayanan by no registrasi from sirs*/
@@ -230,18 +247,19 @@ class Migration extends MX_Controller {
         //echo '<pre>';print_r($sirs_data);die;
         /*cek apakah data sudah pernah diinsert ke database atau blm*/
         if( $this->Csm_billing_pasien->checkExistingData($no_registrasi) ){
-            /*no action if data exist, continue to view data*/
+            
         }else{
         /*jika data belum ada atau belum pernah diinsert, maka insert ke table*/
             /*insert data untuk pertama kali*/
             if( $sirs_data->group && $sirs_data->kasir_data && $sirs_data->trans_data )
             $this->Csm_billing_pasien->insertDataFirstTime($sirs_data, $no_registrasi);
+
         }
 
-        $dataBilling = $this->getBillingLocal($no_registrasi, $tipe);
        //echo '<pre>';print_r($dataBilling);die;
+        /*no action if data exist, continue to view data*/
+        $dataBilling = $this->Csm_billing_pasien->getBillingDataLocal($no_registrasi, $tipe);
         $data['reg'] = (count($dataBilling['reg_data']) > 0) ? $dataBilling['reg_data'] : [] ;
-
         if( $tipe=='RJ' ){
             $group = array();
             foreach ($dataBilling['billing'] as $value) {
@@ -253,19 +271,11 @@ class Migration extends MX_Controller {
         }else{
             $data['content_view'] = $this->Csm_billing_pasien->getDetailBillingRI($no_registrasi, $tipe, $sirs_data);
         }
-        
+
         //echo '<pre>';print_r($data);die;
         $this->load->view('Migration/'.$view_name.'', $data);
     }
 
-    public function getBillingLocal($no_registrasi, $tipe){
-        return $this->Csm_billing_pasien->getBillingDataLocal($no_registrasi, $tipe);
-    }
-
-    
-    
-
-    
 
     public function getDetail($no_registrasi, $tipe){
         
@@ -300,191 +310,20 @@ class Migration extends MX_Controller {
         echo json_encode($output);
     }
 
-    public function getHtmlData($params, $no_registrasi, $flag, $pm, $rb=''){
+    public function update_status_nk_kode_perusahaan()
+    {   
+        $no_registrasi = $this->input->post('no_registrasi');
+        if( $this->Migration->update_status_nk_kode_perusahaan($no_registrasi) ){
+            /*get data trans pelayanan by no registrasi from sirs*/
+            $sirs_data = json_decode($this->Csm_billing_pasien->getDetailData($no_registrasi));
+            $this->Csm_billing_pasien->insertDataFirstTime($sirs_data, $no_registrasi);
 
-        $temp = new Templates;
-        /*header html*/
-        /*get detail data billing*/
-        $data = json_decode($this->Csm_billing_pasien->getDetailData($no_registrasi));
-        //echo '<pre>';print_r($data);die;
-        $html = '';
-
-        switch ($flag) {
-            case 'RJ':
-                $html .= $temp->setGlobalHeaderTemplate();
-                $html .= $temp->setGlobalProfilePasienTemplate($data);
-                $html .= $temp->setGlobalContentBilling($temp->TemplateBillingRJ($no_registrasi, $flag, $data));
-                $html .= $temp->setGlobalFooterBilling($data);
-                break;
-            case 'RI':
-                $html .= $temp->setGlobalHeaderTemplate();
-                $html .= $temp->setGlobalProfilePasienTemplateRI($data);
-                $html .= $temp->setGlobalContentBilling($temp->TemplateBillingRI($no_registrasi, $flag, $data, $rb));
-                $html .= $temp->setGlobalFooterBillingRI();
-
-                break;
-            case 'RAD':
-                $html .= $temp->setGlobalHeaderTemplate();
-                $html .= $temp->setGlobalProfilePasienTemplatePM($data, $flag, $pm);
-                $html .= $temp->setGlobalContentBilling($temp->TemplateHasilPM($no_registrasi, $flag, $data, $pm));
-                $html .= $temp->setGlobalFooterBillingPM($data->reg_data->nama_pegawai, $flag, $pm);
-                break;
-            case 'LAB':
-                $html .= $temp->setGlobalHeaderTemplate();
-                $html .= $temp->setGlobalProfilePasienTemplatePM($data, $flag, $pm);
-                $html .= $temp->setGlobalContentBilling($temp->TemplateHasilPM($no_registrasi, $flag, $data, $pm));
-                $html .= $temp->setGlobalFooterBillingPM($data->reg_data->nama_pegawai, $flag, $pm);
-                break;
-            
-            default:
-                # code...
-                break;
-        }
-        
-        return json_encode( array('html' => $html, 'data' => $params) );
-    }
-
-    public function getRincianBilling($noreg, $tipe, $field){
-        $temp = new Templates;
-        /*header html*/
-        $html = '';
-        $html .= $temp->TemplateRincianRI($noreg, $tipe, $field);
-        
-        echo json_encode(array('html' => $html));
-    }
-
-    public function getRincianBillingData($noreg, $tipe, $field){
-        $temp = new Templates;
-        /*header html*/
-        $html = '';
-        $html .= $temp->TemplateRincianRI($noreg, $tipe, $field);
-         
-        return json_encode(array('html' => $html));
-    }
-
-    public function getContentPDF($no_registrasi, $flag, $pm, $act_code=''){
-
-      /*get content data*/
-      $data = $this->getBillingLocal($no_registrasi, $flag); 
-      //echo '<pre>';print_r($data);die;
-      /*get content html*/
-      $html = json_decode( $this->getHtmlData($data, $no_registrasi, $flag, $pm) );
-      
-      /*generate pdf*/
-      $this->exportPdf($html, $flag, $pm, $act_code); 
-      
-      return true;
-
-    }
-
-    public function exportPdf($data, $flag, $pm, $act_code='') { 
-        //echo '<pre>';print_r($data);die;
-        $this->load->library('pdf');
-        $reg_data = $data->data->reg_data;
-
-        /*default*/
-        $action = ($act_code=='')?'I':$act_code;
-        /*filename and title*/
-        $filename = $flag.'-'.$reg_data->csm_rp_no_mr.$reg_data->no_registrasi.$pm;
-
-        $tanggal = new Tanggal();
-        $pdf = new TCPDF('P', PDF_UNIT, array(470,280), true, 'UTF-8', false);
-        $pdf->SetCreator(PDF_CREATOR);
-        
-        $pdf->SetAuthor('Rumah Sakit Setia Mitra');
-        $pdf->SetTitle(''.$filename.'');
-
-    // remove default header/footer
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
-
-    // set default monospaced font
-        $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-
-    // set margins
-        $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT,PDF_MARGIN_BOTTOM);
-
-    // set auto page breaks
-        $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-
-    // set image scale factor
-        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-    
-    // auto page break //
-        $pdf->SetAutoPageBreak(TRUE, 30);
-
-        //set page orientation
-        
-    // set some language-dependent strings (optional)
-        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
-            require_once(dirname(__FILE__).'/lang/eng.php');
-            $pdf->setLanguageArray($l);
-        }
-        
-        $pdf->SetFont('helvetica', '', 9);
-        $pdf->ln();
-
-        //kotak form
-        $pdf->AddPage('P', 'A4');
-        //$pdf->setY(10);
-        $pdf->setXY(5,20,5,5);
-        $pdf->SetMargins(10, 10, 10, 10); 
-        /* $pdf->Cell(150,42,'',1);*/
-        $html = <<<EOD
-        <link rel="stylesheet" href="'.file_get_contents(_BASE_PATH_.'/assets/css/bootstrap.css)'" />
-EOD;
-        $html .= $data->html;
-        $result = $html;
-
-        // output the HTML content
-        $pdf->writeHTML($result, true, false, true, false, '');
-
-        /*save to folder*/
-        $pdf->Output('uploaded/casemix/'.$filename.'.pdf', ''.$action.''); 
-
-        /*show pdf*/
-        //$pdf->Output(''.$reg_data->no_registrasi.'.pdf', 'I'); 
-        /*download*/
-        //$pdf->Output(''.$reg_data->no_registrasi.'.pdf', 'D'); 
-        
-    }
-
-    public function mergePDFFiles($no_registrasi, $tipe){
-        /*get doc*/
-
-        $reg_data = $this->Csm_billing_pasien->getRegDataLocal($no_registrasi);
-        $doc_pdf = $this->Csm_billing_pasien->getDocumentPDF($no_registrasi);
-        //echo '<pre>';print_r($doc_pdf);die;
-        /*save merged file*/
-        $datasaved = array(
-            'no_registrasi' => $no_registrasi,
-            'tgl_transaksi_kasir' => $reg_data->csm_rp_tgl_keluar,
-            'no_sep' => $reg_data->csm_rp_no_sep,
-            'csm_dk_filename' => $reg_data->csm_rp_no_sep.'.pdf',
-            'csm_dk_fullpath' => 'uploaded/casemix/merge-'.date('M-Y').'/'.$reg_data->csm_rp_no_sep.'.pdf',
-            'csm_dk_total_klaim' => $this->Csm_billing_pasien->getTotalBilling($no_registrasi, $tipe),
-            'csm_dk_tipe' => $tipe,
-            'created_date' => date('Y-m-d H:i:s'),
-            'created_by' => $this->regex->_genRegex($this->session->userdata('user')->fullname,'RGXQSL')
-            );
-        print_r($datasaved);die;
-        /*check if exist*/
-        if( $this->db->get_where('csm_dokumen_klaim', array('no_sep' => $reg_data->csm_rp_no_sep))->num_rows() > 0){
-            $this->db->update('csm_dokumen_klaim', $datasaved, array('no_sep' => $reg_data->csm_rp_no_sep));
+            echo json_encode(array('status' => 200, 'message' => 'Proses Berhasil Dilakukan'));
         }else{
-            $this->db->insert('csm_dokumen_klaim', $datasaved);
+            echo json_encode(array('status' => 301, 'message' => 'Maaf Proses Gagal Dilakukan'));
         }
-
-
-        $fields_string = "";
-        foreach($doc_pdf as $key=>$value) {
-            $fields_string .= $value->csm_dex_id.'='.$value->csm_dex_nama_dok.'&sep='.$value->csm_rp_no_sep.'&';
-        }
-
-        rtrim($fields_string,'&');
-        $url = base_url().'ApiMerge/index.php?action=download&noreg='.$no_registrasi.'&'.$fields_string;
-        header("Location:".$url);
     }
+
 
 }
 /* End of file example.php */

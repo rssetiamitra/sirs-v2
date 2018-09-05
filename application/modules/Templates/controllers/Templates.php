@@ -63,12 +63,22 @@ class Templates extends MX_Controller {
 		$data['menu'] = $this->lib_menus->get_menus($this->session->userdata('user')->user_id, $_GET['mod']);
 		$data['app'] = $this->db->get_where('tmp_profile_app', array('id' => 1))->row();
 		$data['module'] = $this->db->get_where('tmp_mst_modul', array('modul_id' => $_GET['mod']))->row();
-		//$data['graph'] = $this->master->get_graph_data();
-		//$data['graph_polling'] = $this->master->get_graph_polling();
+		//$data['graph'] = $this->graph_master->get_graph($_GET['mod']);
 		//print_r($data['graph']);die;
 		$this->load->view('templates/content_view', $data);
 
 	}
+
+    public function getGraphModule(){
+        $data[0] = array('mod' => 36,'nameid' => 'graph-column-1','style' => 'column','url' => 'templates/Templates/graph?prefix=1&TypeChart=column&style=1&mod=36');
+        $data[1] = array('mod' => 36,'nameid' => 'graph-column-2','style' => 'column','url' => 'templates/Templates/graph?prefix=2&TypeChart=column&style=1&mod=36');
+        $data[2] = array('mod' => 36,'nameid' => 'graph-pie-1','style' => 'pie','url' => 'templates/Templates/graph?prefix=3&TypeChart=pie&style=1&mod=36');
+        echo json_encode($data);
+    }
+
+    public function graph(){
+        echo json_encode($this->graph_master->get_graph($_GET['mod'],$_GET), JSON_NUMERIC_CHECK);
+    }
 
 	public function setGlobalHeaderTemplate(){
 		$html = '';
@@ -112,6 +122,8 @@ class Templates extends MX_Controller {
     public function setGlobalProfilePasienTemplateRI($data, $flag='', $pm=''){
         $html = '';
         $jk = ($data->reg_data->jk == 'L')?'Pria':'Wanita';
+        /*data ri*/
+        $ri = $this->Csm_billing_pasien->getDataRI($data->reg_data->no_registrasi);
         $html .= '<table align="left" cellpadding="0" cellspacing="0" border="0">
                      <tr>
                         <td width="100px">No. RM</td>
@@ -138,6 +150,12 @@ class Templates extends MX_Controller {
                         <td width="300px">: '.$jk.'</td>
                         <td width="120px">Tanggal Keluar</td>
                         <td width="300px">: '.$this->tanggal->formatDate($data->reg_data->tgl_jam_keluar).'</td>
+                    </tr>
+                    <tr>
+                        <td width="100px">Ruangan</td>
+                        <td width="300px">: '.$ri->nama_bagian.'</td>
+                        <td width="120px">Kelas</td>
+                        <td width="300px">: '.$ri->nama_klas.'</td>
                     </tr>                    
                   </table>';
         return $html;

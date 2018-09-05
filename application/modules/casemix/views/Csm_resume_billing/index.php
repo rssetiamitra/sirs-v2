@@ -16,11 +16,27 @@
     <form class="form-horizontal" method="post" id="form_search">
 
     <div class="col-md-12">
-      <center><h4>FORM PENCARIAN DATA RESUME BILLING<br><small style="font-size:12px">(Silahkan lakukan pencarian data berdasarkan parameter dibawah ini)</small></h4></center>
+      <center><h4>FORM PENCARIAN DATA RESUME BILLING RAWAT JALAN<br><small style="font-size:12px">(Silahkan lakukan pencarian data berdasarkan parameter dibawah ini)</small></h4></center>
       <br>
-
       <div class="form-group">
-        <label class="control-label col-md-2">Tanggal Transaksi</label>
+        <label class="control-label col-md-2">Pencarian Berdasarkan</label>
+          <div class="col-md-6">
+            <div class="radio">
+              <label>
+                <input name="search_by_field" type="radio" class="ace" value="created_date" checked>
+                <span class="lbl"> Waktu Input/Costing</span>
+              </label>
+
+              <label>
+                <input name="search_by_field" type="radio" class="ace" value="csm_rp_tgl_keluar">
+                <span class="lbl"> Tanggal Transaksi</span>
+              </label>
+            </div>
+
+          </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-md-2">Masukan Tanggal</label>
           <div class="col-md-2">
             <div class="input-group">
               <input class="form-control date-picker" name="from_tgl_reg" id="from_tgl_reg" type="text" data-date-format="yyyy-mm-dd" value=""/>
@@ -39,12 +55,7 @@
               </span>
             </div>
           </div>
-      </div>
-      <br>
-
-      <div class="form-group">
-        <label class="control-label col-md-2 ">&nbsp;</label>
-        <div class="col-md-10">
+          <div class="col-md-5">
           <a href="#" id="btn_search_data" class="btn btn-xs btn-default">
             <i class="ace-icon fa fa-search icon-on-right bigger-110"></i>
             Search
@@ -53,16 +64,17 @@
             <i class="ace-icon fa fa-refresh icon-on-right bigger-110"></i>
             Reset
           </a>
-          <a href="#" id="btn_export_pdf" class="btn btn-xs btn-danger">
+          <!-- <a href="#" id="btn_export_pdf" class="btn btn-xs btn-danger">
             <i class="fa fa-file-word-o bigger-110"></i>
             Export PDF
-          </a>
+          </a> -->
           <a href="#" id="btn_export_excel" class="btn btn-xs btn-success">
             <i class="fa fa-file-word-o bigger-110"></i>
             Export Excel
           </a>
         </div>
       </div>
+      <br>
 
     </div>
 
@@ -73,17 +85,16 @@
         <thead>
           <tr>  
             <th width="30px" class="center"></th>
-            <th>No. SEP</th>
-            <th>No. MR</th>
+            <th width="100px">No. SEP</th>
+            <th width="60px">No. MR</th>
             <th width="150px">Nama Pasien</th>
-            <th width="150px">Tanggal (In/Out)</th>
-            <th width="100px">Tipe (RI/RJ)</th>
-            <th width="120px" class="center">Dokter</th>
-            <th width="120px" class="center">Administrasi</th>
-            <th width="120px" class="center">Obat/Farmasi</th>
-            <th width="120px" class="center">Penunjang Medis</th>
-            <th width="120px" class="center">Tindakan</th>
-            <th width="120px" class="center">Total</th>
+            <th width="100px">Tanggal<br>Transaksi</th>
+            <th width="90px" class="center">Dokter</th>
+            <th width="90px" class="center">Adm</th>
+            <th width="90px" class="center">Obat/<br>Farmasi</th>
+            <th width="90px" class="center">Penunjang Medis</th>
+            <th width="90px" class="center">Tindakan</th>
+            <th width="90px" class="center">Total</th>
           </tr>
         </thead>
         <tbody>

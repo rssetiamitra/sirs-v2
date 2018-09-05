@@ -40,7 +40,7 @@
           <!-- #section:basics/navbar.layout.brand -->
           <a href="#" class="navbar-brand">
             <small>
-              <img src="<?php echo base_url().'assets/images/'.$app->app_logo.''?>" width="50px" style="margin: -16px -7px -9px">
+              <img src="<?php echo base_url().'assets/images/'.$app->app_logo.''?>" width="40px" style="margin: -16px -7px -14px">&nbsp;
               <?php echo $app->app_name?>
             </small>
           </a>

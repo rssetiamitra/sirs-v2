@@ -66,7 +66,7 @@
           <a href="#" class="navbar-brand">
             <small>
               <!-- <i class="<?php echo $app->icon?>"></i> -->
-              <img src="<?php echo base_url().'assets/images/'.$app->app_logo.''?>" width="50px" style="margin: -16px -7px -9px">
+              <img src="<?php echo base_url().'assets/images/'.$app->app_logo.''?>" width="40px" style="margin: -14px -7px -14px"> &nbsp;
               <?php echo $app->app_name?>
             </small>
           </a>
@@ -651,33 +651,39 @@
                 </div>
               </div>
             </div>
-            <!-- /section:settings.box -->
-                <!-- PAGE CONTENT BEGINS -->
-                  <div id="page-area-content">
+            <!-- PAGE CONTENT BEGINS -->
+            <div id="page-area-content">
 
-                    <div class="row">
-                      <!-- content here -->
-                        <div class="page-header">
-                            <h1>
-                              <?php echo $title?>
-                              <small>
-                                <i class="ace-icon fa fa-angle-double-right"></i>
-                                <?php echo isset($breadcrumbs)?$breadcrumbs:''?>
-                              </small>
-                            </h1>
-                          </div>
-                        <div class="col-sm-12">
-                          <h2>Modul <?php echo $module->name?></h2>
-                          <?php echo $module->description?>
-                        </div>
-
-                        <!-- <div class="col-sm-6">
-                          <div id="polling"></div>
-                        </div> -->
-                      <!-- end content here -->
+              <div class="row">
+                <!-- content here -->
+                  <div class="page-header">
+                      <h1>
+                        <?php echo $title?>
+                        <small>
+                          <i class="ace-icon fa fa-angle-double-right"></i>
+                          <?php echo isset($breadcrumbs)?$breadcrumbs:''?>
+                        </small>
+                      </h1>
                     </div>
+                  <div class="col-sm-12">
+                    <h2>Modul <?php echo $module->name?></h2>
+                    <?php echo $module->description?>
                   </div>
-                <!-- PAGE CONTENT ENDS -->
+
+                  <div class="col-sm-8">
+                    <div id="graph-column-1"></div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div id="graph-pie-1"></div>
+                  </div>
+                  <div class="col-sm-12">
+                    <div id="graph-column-2"></div>
+                  </div>
+
+                <!-- end content here -->
+              </div>
+            </div>
+            <!-- PAGE CONTENT ENDS -->
           </div><!-- /.page-content -->
         </div>
       </div><!-- /.main-content -->
@@ -689,21 +695,6 @@
             <span class="bigger-120">
               <?php echo $app->footer?>
             </span>
-
-            &nbsp; &nbsp;
-            <!-- <span class="action-buttons">
-              <a href="#">
-                <i class="ace-icon fa fa-twitter-square light-blue bigger-150"></i>
-              </a>
-
-              <a href="#">
-                <i class="ace-icon fa fa-facebook-square text-primary bigger-150"></i>
-              </a>
-
-              <a href="#">
-                <i class="ace-icon fa fa-rss-square orange bigger-150"></i>
-              </a>
-            </span> -->
           </div>
 
           <!-- /section:basics/footer -->
@@ -823,103 +814,11 @@
 
      <script src="<?php echo base_url()?>assets/js/custom/menu_load_page.js"></script>
 
-     <script src="<?php echo base_url()?>assets/chart/highcharts.js"></script>
+    <!-- highchat modules -->
+    <script src="<?php echo base_url()?>assets/chart/highcharts.js"></script>
     <script src="<?php echo base_url()?>assets/chart/modules/exporting.js"></script>
-    <script type="text/javascript">
-      /*jQuery(function($) {
+    <script src="<?php echo base_url()?>assets/chart/modules/script.js"></script>
+    <!-- end highchat modules -->
 
-        $('#graf').highcharts({
-            chart: {
-                plotBackgroundColor: null,
-                plotBorderWidth: null,
-                plotShadow: false
-            },
-            title: {
-                text: '<p style="font-size:14px">Data Konten Website Berdasarkan Kategori Modul</p>'
-            },
-            tooltip: {
-                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                        style: {
-                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                        }
-                    }
-                }
-            },
-            exporting: {
-                     enabled: false
-            },
-            series: [{
-                type: 'pie',
-                name: 'Jenis Kelamin',
-                data: [
-                <?php foreach ($graph as $k => $v) {
-                  echo "['$v->wm_name', $v->total]";
-                  echo ",";
-                }?>
-
-                ]
-            }]
-        });
-
-        $('#polling').highcharts({
-            chart: {
-                plotBackgroundColor: null,
-                plotBorderWidth: null,
-                plotShadow: false
-            },
-            title: {
-                text: '<p style="font-size:14px">Polling Masyarakat : <?php echo $graph_polling->wpl_question?></p>'
-            },
-            tooltip: {
-                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                        style: {
-                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                        }
-                    }
-                }
-            },
-            exporting: {
-                     enabled: false
-            },
-            series: [{
-                type: 'pie',
-                name: 'Jenis Kelamin',
-                data: [
-                <?php 
-                  $expl = explode(',', $graph_polling->hasil);
-                  foreach ($expl as $kex => $vex) {
-                    # code...
-                    $exp_str = explode('=', $vex);
-                    echo "['$exp_str[0]', $exp_str[1]]";
-                    echo ",";
-                  }
-
-                ?>
-                ]
-            }]
-        });
-
-
-       });*/
-
-      
-    </script>
-    
   </body>
 </html>

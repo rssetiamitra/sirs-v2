@@ -150,6 +150,11 @@ final class Tanggal {
         return $tanggal . ' ' . $bulan . ' ' . $tahun;
     }
 
+    public function selisih($date, $selisih){
+        $tanggal = date('Y-m-d', strtotime(''.$selisih.' days', strtotime( $date )));
+        return $tanggal;
+    }
+
     public  function getBulan($bln) {
         switch ($bln) {
             case 1:

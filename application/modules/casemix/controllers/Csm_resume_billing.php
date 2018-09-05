@@ -35,6 +35,8 @@ class Csm_resume_billing extends MX_Controller {
     
     public function get_data()
     {
+
+        //print_r($_GET);die;
         /*get data from model*/
             $list = $this->Csm_resume_billing->get_datatables();
             $data = array();
@@ -48,13 +50,10 @@ class Csm_resume_billing extends MX_Controller {
                                 <span class="lbl"></span>
                             </label>
                           </div>';
-                $row[] = '<div class="left">'.$row_list->csm_rp_no_sep.'<br>('.$row_list->no_registrasi.')</div>';
+                $row[] = '<div class="left"><a href="#" onclick="getMenu('."'".'casemix/csm_billing_pasien/editBilling/'.$row_list->no_registrasi.''."/RJ'".')">'.$row_list->csm_rp_no_sep.'</a></div>';
                 $row[] = $row_list->csm_rp_no_mr;
                 $row[] = strtoupper($row_list->csm_rp_nama_pasien);
-                $row[] = '<i class="fa fa-angle-double-right green"></i> '.$this->tanggal->formatDate($row_list->csm_rp_tgl_masuk).'<br><i class="fa fa-angle-double-left red"></i> '.$this->tanggal->formatDate($row_list->csm_rp_tgl_keluar);
-                $str_kode_bag = substr((string)$row_list->csm_rp_kode_bagian, 0,2);
-                $str_type = ($str_kode_bag=='01')?'RJ':'RI';
-                $row[] = '<div class="center">'.$str_type.'</div>';
+                $row[] = $this->tanggal->formatDate($row_list->csm_rp_tgl_keluar);
                 $row[] = '<div align="right">'.number_format($row_list->csm_brp_bill_dr).'</div>';
                 $row[] = '<div align="right">'.number_format($row_list->csm_brp_bill_adm).'</div>';
                 $row[] = '<div align="right">'.number_format($row_list->csm_brp_bill_far).'</div>';
@@ -71,7 +70,7 @@ class Csm_resume_billing extends MX_Controller {
         $output = array(
                         "draw" => $_POST['draw'],
                         "recordsTotal" => $this->Csm_resume_billing->count_all(),
-                        //"recordsFiltered" => $this->Csm_resume_billing->count_filtered(),
+                        "recordsFiltered" => $this->Csm_resume_billing->count_filtered(),
                         "data" => $data,
                 );
         //print_r($output);die;
@@ -81,6 +80,7 @@ class Csm_resume_billing extends MX_Controller {
 
     public function find_data()
     {   
+        //print_r($_POST);die;
         $output = array(
                         "recordsTotal" => $this->Csm_resume_billing->count_all(),
                         //"recordsFiltered" => $this->registrasi_adm->count_filtered_data(),
@@ -107,8 +107,7 @@ class Csm_resume_billing extends MX_Controller {
                             <th>No. SEP</th>
                             <th>No. MR</th>
                             <th width="150px">Nama Pasien</th>
-                            <th width="150px">Tanggal (In/Out)</th>
-                            <th width="70px">Tipe (RI/RJ)</th>
+                            <th width="150px">Tanggal Transaksi</th>
                             <th width="70px" align="center">Dokter</th>
                             <th width="70px" align="center">Administrasi</th>
                             <th width="70px" align="center">Obat/Farmasi</th>
@@ -120,8 +119,8 @@ class Csm_resume_billing extends MX_Controller {
                         <tbody>';
         $no = 0;
         foreach ($data as $key => $value) { $no++;
-            $str_kode_bag = substr((string)$value->csm_rp_kode_bagian, 0,2);
-            $str_type = ($str_kode_bag=='01')?'RJ':'RI';
+            /*$str_kode_bag = substr((string)$value->csm_rp_kode_bagian, 0,2);
+            $str_type = ($str_kode_bag=='01')?'RJ':'RI';*/
             $total = $value->csm_brp_bill_dr + $value->csm_brp_bill_adm + $value->csm_brp_bill_far + $value->csm_brp_bill_pm + $value->csm_brp_bill_tindakan;
 
             $html .= '<tr>  
@@ -130,7 +129,6 @@ class Csm_resume_billing extends MX_Controller {
                         <td>'.$value->csm_rp_no_mr.'</td>
                         <td width="150px">'.$value->csm_rp_nama_pasien.'</td>
                         <td width="150px">'.$value->csm_rp_tgl_masuk.'<br>'.$value->csm_rp_tgl_keluar.'</td>
-                        <td width="70px" align="center">'.$str_type.'</td>
                         <td width="70px" align="right">'.$value->csm_brp_bill_dr.'</td>
                         <td width="70px" align="right">'.$value->csm_brp_bill_adm.'</td>
                         <td width="70px" align="right">'.$value->csm_brp_bill_far.'</td>

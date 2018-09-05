@@ -271,7 +271,6 @@ $(document).ready(function() {
           },
           success: function(data) {
             achtungHideLoader();
-            $('#range_date').html('(Source data : Tanggal '+ $('#from_tgl_reg').val()+ ' s/d '+$('#to_tgl_reg').val()+')');
             find_data_reload(data);
           }
         });
@@ -279,15 +278,17 @@ $(document).ready(function() {
 
       $('#btn_export_pdf').click(function (e) {
           e.preventDefault();
+          var field = $('input[name=search_by_field]:checked').val();
           var from_tgl_reg = $('#from_tgl_reg').val();
           var to_tgl_reg = $('#to_tgl_reg').val();
-          window.open('Templates/export_data/exportContent?frmdt='+from_tgl_reg+'&todt='+to_tgl_reg+'&type=pdf&mod=Csm_resume_billing','_blank');     
+          window.open('Templates/export_data/exportContent?frmdt='+from_tgl_reg+'&todt='+to_tgl_reg+'&field='+field+'&type=pdf&mod=Csm_resume_billing','_blank');     
       });
       $('#btn_export_excel').click(function (e) {
           e.preventDefault();
+          var field = $('input[name=search_by_field]:checked').val();
           var from_tgl_reg = $('#from_tgl_reg').val();
           var to_tgl_reg = $('#to_tgl_reg').val();
-          window.open('Templates/export_data/exportContent?frmdt='+from_tgl_reg+'&todt='+to_tgl_reg+'&type=excel&mod=Csm_resume_billing','_blank');     
+          window.open('Templates/export_data/exportContent?frmdt='+from_tgl_reg+'&todt='+to_tgl_reg+'&field='+field+'&type=excel&mod=Csm_resume_billing','_blank');     
       });
 
 
@@ -321,7 +322,7 @@ function reset_table(){
 function find_data_reload(result){
 
     var data = result.data;    
-    oTable.ajax.url('casemix/Csm_resume_billing/get_data?frmdt='+data.from_tgl_reg+'&todt='+data.to_tgl_reg).load();
+    oTable.ajax.url('casemix/Csm_resume_billing/get_data?frmdt='+data.from_tgl_reg+'&todt='+data.to_tgl_reg+'&field='+data.search_by_field).load();
     $("html, body").animate({ scrollTop: "400px" });
     //$('#search_result_show').show();
 

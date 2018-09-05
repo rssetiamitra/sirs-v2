@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta charset="utf-8" />
-    <title>SIRS | Form Login</title>
+    <title>Form Login</title>
 
     <meta name="description" content="User login page" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -21,47 +21,48 @@
     <link rel="shortcut icon" href="<?php echo base_url()?>assets/images/favicon.ico">
     
   </head>
-  <!-- <style type="text/css">
+  <style type="text/css">
     #body-style {
-      background-image:url('assets/images/bg.jpg');
+      background-image:url('assets/images/bg2.jpg');
       background-size: 100%; 
       background-attachment: fixed;
-      background-position: top;
-      filter: opacity(opacity: 100%);
+      background-position: center;
+      background-size: cover;
+      opacity: 1;
+      /*filter: alpha(opacity=50);*/
       background-repeat: no-repeat;
     }
-  </style> -->
+  </style>
 
   <body class="login-layout light-login" id="body-style">
     <div class="main-container">
       <div class="main-content">
         <div class="row">
+
+        <br><br><br><br><br>
           <div class="col-sm-10 col-sm-offset-1">
             <div class="login-container">
 
               <div class="center">
                 <h1>
                   <!-- <i class="ace-icon fa fa-leaf green"></i> -->
-                  <img src="<?php //echo base_url().'assets/images/dkpp.png'?>" width="200px"><br>
+                  
                   <!-- <span class="white" id="id-text2">Aplikasi Metode Perencanaan Kebutuhan SDM Kesehatan</span> -->
                 </h1>
-                <!-- <h3 class="dark" id="id-text">DKPP<br><small>Dewan Kehormatan Penyelenggara Pemilu</small></h3>
-                <h4 class="dark" id="company-text">&copy; Panel Admin - Website</h4> -->
+                <!-- <h3 class="dark" id="id-text">Hospital Information System<br><small></small></h3> -->
+                <!-- <h4 class="dark" id="company-text">&copy; Panel Admin - Website</h4> -->
               </div>
               <div class="space-6"></div>
-              <br><br><br><br><br><br><br>
               <div class="position-relative">
                 <div id="login-box" class="login-box visible widget-box no-border">
                   <div class="widget-body">
                     <div class="widget-main">
-
+                      <!-- <center><img src="<?php echo base_url().'assets/images/logo3.png'?>" width="250px"></center> -->
                       <h4 class="header blue lighter bigger">
                         <i class="ace-icon fa fa-coffee green"></i>
                         Silahkan masukan akun anda
                       </h4>
-
                       <div class="space-6"></div>
-
                       <form method="post" action="<?php echo base_url().'index.php/login/process'?>" id="form-login">
                         <fieldset>
                           <label class="block clearfix">
@@ -119,27 +120,22 @@
                       <div class="space-6"></div>
 
                     </div><!-- /.widget-main -->
-                    <!-- <div class="toolbar clearfix">
-                      <div>
-                        <a href="#" data-target="#forgot-box" class="forgot-password-link">
-                          <i class="ace-icon fa fa-arrow-left"></i>
-                          Lupa password
-                        </a>
+                    <div class="toolbar clearfix">
+                      <div style="width:30% !important; padding-left:15px">
+                        <img src="<?php echo base_url().'assets/images/logo.png'?>" width="80px">
                       </div>
-
-                      <div>
-                        <a href="<?php echo base_url().'register'?>" class="user-signup-link">
-                          Registrasi
-                          <i class="ace-icon fa fa-arrow-right"></i>
-                        </a>
+                      <div style="width:70% !important; text-align:left;float:left; font-size:11px;color:white;padding-top:15px">
+                        Rumah Sakit Setia Mitra
+                          Jl. RS. Fatmawati No. 80 - 82 Jakarta Selatan - 12430<br>
+                          Telp. (021) 7656000 &nbsp; Fax. (021) 7656875<br>
                       </div>
-                    </div> -->
+                    </div>
                   </div><!-- /.widget-body -->
                 </div><!-- /.login-box -->
 
               </div><!-- /.position-relative -->
 
-              <div class="navbar-fixed-top align-right">
+              <!-- <div class="navbar-fixed-top align-right">
                 <br />
                 &nbsp;
                 <a id="btn-login-dark" href="#">Dark</a>
@@ -152,7 +148,7 @@
                 &nbsp;
                 <a id="btn-login-light" href="#">Light</a>
                 &nbsp; &nbsp; &nbsp;
-              </div>
+              </div> -->
             </div>
           </div><!-- /.col -->
         </div><!-- /.row -->

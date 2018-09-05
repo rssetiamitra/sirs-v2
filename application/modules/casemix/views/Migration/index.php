@@ -18,16 +18,12 @@
     <div class="col-md-12">
       <center><h4>FORM PENCARIAN DATA REGISTRASI PASIEN<br><small style="font-size:12px">(Silahkan lakukan pencarian data berdasarkan parameter dibawah ini)</small></h4></center>
       <br>
-
       <div class="form-group">
-        <label class="control-label col-md-2 ">No.SEP / No.MR  </label>
+        <label class="control-label col-md-2">No.SEP / No.MR  </label>
         <div class="col-md-2">
           <input type="text" class="form-control" name="no_sep_mr" id="no_sep_mr">
         </div>
-      </div>
-
-      <div class="form-group">
-        <label class="control-label col-md-2">Tgl Reg Pasien</label>
+        <label class="control-label col-md-1">Tanggal</label>
           <div class="col-md-2">
             <div class="input-group">
               <input class="form-control date-picker" name="from_tgl_reg" id="from_tgl_reg" type="text" data-date-format="yyyy-mm-dd" value=""/>
@@ -46,50 +42,21 @@
               </span>
             </div>
           </div>
-
-          <label class="control-label col-md-1">Tipe (RI/RJ)</label>
           <div class="col-md-2">
-            <select name="tipe_ri_rj" id="tipe_ri_rj" class="form-control">
-              <option value="all">-All-</option>
-              <option value="RJ">Rawat Jalan (RJ)</option>
-              <option value="RI">Rawat Inap (RI)</option>
-            </select>
+            <a href="#" id="btn_search_data" class="btn btn-xs btn-default">
+              <i class="ace-icon fa fa-search icon-on-right bigger-110"></i>
+              Search
+            </a>
+            <a href="#" id="btn_reset_data" class="btn btn-xs btn-warning">
+              <i class="ace-icon fa fa-refresh icon-on-right bigger-110"></i>
+              Reset
+            </a>
           </div>
-
       </div>
-      <br>
-
-      <div class="form-group">
-        <label class="control-label col-md-2 ">&nbsp;</label>
-        <div class="col-md-10">
-          <a href="#" id="btn_search_data" class="btn btn-xs btn-default">
-            <i class="ace-icon fa fa-search icon-on-right bigger-110"></i>
-            Search
-          </a>
-          <a href="#" id="btn_reset_data" class="btn btn-xs btn-warning">
-            <i class="ace-icon fa fa-refresh icon-on-right bigger-110"></i>
-            Reset
-          </a>
-         <!--  <a href="#" id="btn_export_word" class="btn btn-xs btn-primary">
-            <i class="fa fa-file-word-o bigger-110"></i>
-            Export Word
-          </a>
-          <a href="#" id="btn_export_pdf" class="btn btn-xs btn-danger">
-            <i class="fa fa-file-word-o bigger-110"></i>
-            Export PDF
-          </a>
-          <a href="#" id="btn_export_excel" class="btn btn-xs btn-success">
-            <i class="fa fa-file-word-o bigger-110"></i>
-            Export Excel
-          </a> -->
-        </div>
-      </div>
-
     </div>
-
+    <p>&nbsp;</p>
     <hr class="separator">
-
-    <div style="margin-top:-27px">
+    <div style="margin-top:-20px" id="table-data">
       <table id="dynamic-table" class="table table-bordered table-hover">
         <thead>
           <tr>  
@@ -103,10 +70,10 @@
             <th width="150px">Nama Pasien</th>
             <th width="120px">Tanggal (In/Out)</th>
             <th width="150px">Dokter</th>
-            <th width="100px">Tipe (RI/RJ)</th>
-            <th>Status</th>
+            <th width="80px" class="center">Tipe<br>(RI/RJ)</th>
+            <th class="center">Status</th>
             <th class="center">Submit</th>
-            <th class="center">Merge</th>
+            <!-- <th class="center">Merge</th> -->
           </tr>
         </thead>
         <tbody>
